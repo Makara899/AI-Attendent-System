@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "server": "node server.js",
-    "start": "node start-all.js"
+    "start": "node server.js",
+    "dev:all": "node start-all.js"
   },
   "dependencies": {
     "@vladmandic/face-api": "^1.7.14",

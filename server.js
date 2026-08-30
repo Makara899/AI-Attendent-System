@@ -714,6 +714,6 @@ app.delete('/api/attendance/:id', (req, res) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
-  console.log(`🚀 Backend Express API Server running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Backend Express API Server running on port ${PORT}`);
 });
