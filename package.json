@@ -10,6 +10,7 @@
     "server": "node server.js",
     "start": "node server.js",
     "sync-db": "node sync-db.js",
+    "view-db": "node view-db.js",
     "dev:all": "node start-all.js"
   },
   "dependencies": {
