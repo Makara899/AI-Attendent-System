@@ -5,56 +5,57 @@
    ========================================================================== */
 
 :root {
-  /* Reference Palette */
-  --bg: #0A0F1C;
-  --panel: #121A2E;
-  --panel-2: #1A2540;
-  --panel-3: #223052;
-  --line: #263457;
-  --line-light: #364875;
-  --text: #EAF0F7;
-  --text-dim: #8C9AC0;
-  --text-muted: #6C7CA7;
+  /* Modern Enterprise Slate Palette */
+  --bg: #0B132B;
+  --panel: #111C38;
+  --panel-2: #18264B;
+  --panel-3: #203260;
+  --line: rgba(99, 102, 241, 0.16);
+  --line-light: rgba(99, 102, 241, 0.28);
+  --text: #F8FAFC;
+  --text-dim: #94A3B8;
+  --text-muted: #64748B;
   
-  /* Cyber Mint / Teal Accents */
-  --accent: #3FE0C5;
-  --accent-dim: #1F8E7D;
-  --accent-glow: rgba(63, 224, 197, 0.4);
-  --accent-bg: rgba(63, 224, 197, 0.1);
-  --accent-border: rgba(63, 224, 197, 0.3);
+  /* Primary & Attendance Status Accents */
+  --accent: #10B981; /* Emerald Green (Universal Present/Success) */
+  --accent-dim: #059669;
+  --accent-glow: rgba(16, 185, 129, 0.4);
+  --accent-bg: rgba(16, 185, 129, 0.12);
+  --accent-border: rgba(16, 185, 129, 0.35);
+
+  --primary: #6366F1; /* Indigo Blue (Brand / Interactive) */
+  --primary-hover: #4F46E5;
+  --primary-light: #818CF8;
+  --primary-glow: rgba(99, 102, 241, 0.4);
+  --primary-bg: rgba(99, 102, 241, 0.12);
+  --primary-gradient: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
 
   /* Status Accents */
-  --warn: #F2B84B;
-  --warn-bg: rgba(242, 184, 75, 0.12);
-  --warn-border: rgba(242, 184, 75, 0.3);
-  --danger: #F2555A;
-  --danger-bg: rgba(242, 85, 90, 0.12);
-  --danger-border: rgba(242, 85, 90, 0.3);
-  --purple: #9D8CF2;
-  --purple-bg: rgba(157, 140, 242, 0.12);
-  --purple-border: rgba(157, 140, 242, 0.3);
+  --warn: #F59E0B;
+  --warn-bg: rgba(245, 158, 11, 0.12);
+  --warn-border: rgba(245, 158, 11, 0.35);
+  --danger: #EF4444;
+  --danger-bg: rgba(239, 68, 68, 0.12);
+  --danger-border: rgba(239, 68, 68, 0.35);
+  --purple: #A855F7;
+  --purple-bg: rgba(168, 85, 247, 0.12);
+  --purple-border: rgba(168, 85, 247, 0.35);
 
   /* Unified Semantic Variables */
   --bg-main: var(--bg);
   --bg-card: var(--panel);
   --bg-card-elevated: var(--panel-2);
-  --bg-card-hover: #1e2c4d;
-  --bg-input: #0e1526;
+  --bg-card-hover: #1e2e58;
+  --bg-input: #0e172e;
   --border-subtle: var(--line);
   --border-color: var(--line);
-  --border-focus: var(--accent);
+  --border-focus: var(--primary);
 
-  --primary: var(--accent);
-  --primary-hover: #32c4ac;
-  --primary-light: #6ff0da;
-  --primary-glow: var(--accent-glow);
-  --primary-gradient: linear-gradient(135deg, #3FE0C5 0%, #1F8E7D 100%);
-
-  --success: #3FE0C5;
-  --success-glow: rgba(63, 224, 197, 0.35);
+  --success: var(--accent);
+  --success-glow: var(--accent-glow);
   --warning: var(--warn);
-  --warning-glow: rgba(242, 184, 75, 0.35);
-  --danger-glow: rgba(242, 85, 90, 0.35);
+  --warning-glow: rgba(245, 158, 11, 0.35);
+  --danger-glow: rgba(239, 68, 68, 0.35);
 
   --text-main: var(--text);
   --text-heading: #FFFFFF;
@@ -76,7 +77,7 @@
   --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.35);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.65);
-  --shadow-glow: 0 0 20px rgba(63, 224, 197, 0.25);
+  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.25);
 
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
