@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { faceService } from '../services/faceService';
 import { soundService } from '../services/soundService';
-import { api } from '../services/api';
+import { api, formatDisplayTime } from '../services/api';
 
 export default function LiveScanner({
   activeSession,
@@ -220,10 +220,11 @@ export default function LiveScanner({
         }
         confetti({ particleCount: 40, spread: 60, origin: { y: 0.6 } });
 
+        const checkTime = formatDisplayTime(response.data?.check_in_time, response.data?.created_at);
         setLastCheckInAlert({
           type: 'success',
-          time: response.data.check_in_time,
-          message: `${matchedStudent.full_name} (${matchedStudent.student_id}) · ${response.data.check_in_time}`,
+          time: checkTime,
+          message: `${matchedStudent.full_name} (${matchedStudent.student_id}) · ${checkTime}`,
           student: response.data
         });
 
@@ -233,9 +234,11 @@ export default function LiveScanner({
           soundService.playWarningSound();
           soundService.speakAlreadyCheckedIn(matchedStudent.full_name, language);
         }
+        const checkTime = formatDisplayTime(response.data?.check_in_time, response.data?.created_at);
+        const dupMsg = `${matchedStudent.full_name} (${matchedStudent.student_id || matchedStudent.student_code || ''}) ${isKh ? 'បានចុះវត្តមាននៅម៉ោង' : 'has already checked in at'} ${checkTime}.`;
         setLastCheckInAlert({
           type: 'duplicate',
-          message: response.message || `${matchedStudent.full_name} is already checked in today.`,
+          message: dupMsg,
           student: matchedStudent
         });
       }

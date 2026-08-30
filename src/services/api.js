@@ -23,18 +23,30 @@ export const formatDisplayTime = (timeStr, createdAt) => {
         : `${createdAt.replace(' ', 'T')}Z`;
       const dateObj = new Date(utcStr);
       if (!isNaN(dateObj.getTime())) {
-        return dateObj.toLocaleTimeString('en-GB', {
+        return dateObj.toLocaleTimeString('en-US', {
           timeZone: 'Asia/Phnom_Penh',
-          hour: '2-digit',
+          hour: 'numeric',
           minute: '2-digit',
-          hour12: false
+          hour12: true
         });
       }
     } catch (e) {
       console.warn('Time format error:', e);
     }
   }
-  if (timeStr && timeStr !== '-') return timeStr;
+
+  if (timeStr && timeStr !== '-') {
+    const parts = timeStr.split(':');
+    if (parts.length >= 2) {
+      let h = parseInt(parts[0], 10);
+      const m = parts[1].substring(0, 2);
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12;
+      h = h ? h : 12;
+      return `${h}:${m} ${ampm}`;
+    }
+    return timeStr;
+  }
   return '--:--';
 };
 
