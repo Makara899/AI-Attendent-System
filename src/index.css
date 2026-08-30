@@ -1,0 +1,197 @@
+@import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+/* ==========================================================================
+   AI Face Attendance System - Global Cyber-Dark Design System
+   ========================================================================== */
+
+:root {
+  /* Reference Palette */
+  --bg: #0A0F1C;
+  --panel: #121A2E;
+  --panel-2: #1A2540;
+  --panel-3: #223052;
+  --line: #263457;
+  --line-light: #364875;
+  --text: #EAF0F7;
+  --text-dim: #8C9AC0;
+  --text-muted: #6C7CA7;
+  
+  /* Cyber Mint / Teal Accents */
+  --accent: #3FE0C5;
+  --accent-dim: #1F8E7D;
+  --accent-glow: rgba(63, 224, 197, 0.4);
+  --accent-bg: rgba(63, 224, 197, 0.1);
+  --accent-border: rgba(63, 224, 197, 0.3);
+
+  /* Status Accents */
+  --warn: #F2B84B;
+  --warn-bg: rgba(242, 184, 75, 0.12);
+  --warn-border: rgba(242, 184, 75, 0.3);
+  --danger: #F2555A;
+  --danger-bg: rgba(242, 85, 90, 0.12);
+  --danger-border: rgba(242, 85, 90, 0.3);
+  --purple: #9D8CF2;
+  --purple-bg: rgba(157, 140, 242, 0.12);
+  --purple-border: rgba(157, 140, 242, 0.3);
+
+  /* Unified Semantic Variables */
+  --bg-main: var(--bg);
+  --bg-card: var(--panel);
+  --bg-card-elevated: var(--panel-2);
+  --bg-card-hover: #1e2c4d;
+  --bg-input: #0e1526;
+  --border-subtle: var(--line);
+  --border-color: var(--line);
+  --border-focus: var(--accent);
+
+  --primary: var(--accent);
+  --primary-hover: #32c4ac;
+  --primary-light: #6ff0da;
+  --primary-glow: var(--accent-glow);
+  --primary-gradient: linear-gradient(135deg, #3FE0C5 0%, #1F8E7D 100%);
+
+  --success: #3FE0C5;
+  --success-glow: rgba(63, 224, 197, 0.35);
+  --warning: var(--warn);
+  --warning-glow: rgba(242, 184, 75, 0.35);
+  --danger-glow: rgba(242, 85, 90, 0.35);
+
+  --text-main: var(--text);
+  --text-heading: #FFFFFF;
+
+  /* Typography */
+  --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'Courier New', monospace;
+  --sans: 'Inter', 'Kantumruy Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans Khmer', sans-serif;
+  --font-sans: var(--sans);
+  --font-heading: 'Outfit', 'Kantumruy Pro', var(--sans);
+
+  /* Radius & Shadows */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.65);
+  --shadow-glow: 0 0 20px rgba(63, 224, 197, 0.25);
+
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+}
+
+/* Global Reset */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+  background-color: var(--bg);
+}
+
+body {
+  font-family: var(--sans);
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image: 
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(63, 224, 197, 0.07), transparent 70%),
+    radial-gradient(circle at 100% 0%, rgba(157, 140, 242, 0.04), transparent 40%),
+    radial-gradient(circle at 0% 100%, rgba(63, 224, 197, 0.03), transparent 40%);
+  background-attachment: fixed;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--line-light);
+}
+
+/* Typography elements */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-heading);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--primary-light);
+}
+
+code, pre, .font-mono {
+  font-family: var(--mono);
+}
+
+/* Base Form Inputs */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="date"],
+input[type="time"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  background-color: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: var(--sans);
+  transition: all var(--transition-fast);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(63, 224, 197, 0.15);
+  background-color: var(--panel-3);
+}
+
+label {
+  display: block;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+/* Generic Utility Classes */
+.text-primary { color: var(--accent) !important; }
+.text-success { color: var(--accent) !important; }
+.text-warning { color: var(--warn) !important; }
+.text-danger { color: var(--danger) !important; }
+.text-purple { color: var(--purple) !important; }
+.text-muted { color: var(--text-dim) !important; }
+
+.hidden { display: none !important; }
