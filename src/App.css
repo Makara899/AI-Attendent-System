@@ -693,11 +693,20 @@ tr:hover td {
 }
 
 /* ========================================================== */
-/* 📱 MOBILE RESPONSIVE OPTIMIZATION (iPhone, Android, Tablets) */
+/* 📱 MOBILE RESPONSIVE & BOTTOM APP BAR NAVIGATION            */
 /* ========================================================== */
+.mobile-bottom-nav {
+  display: none;
+}
+
+.tab-icon {
+  margin-right: 4px;
+  opacity: 0.85;
+}
+
 @media (max-width: 768px) {
   .app-container, .app-layout {
-    padding: 12px 10px 48px;
+    padding: 12px 10px 85px !important;
     width: 100%;
   }
 
@@ -707,14 +716,14 @@ tr:hover td {
   }
 
   header.top-header {
-    padding: 14px 0 0;
+    padding: 12px 0 0;
   }
 
   .header-top-row {
     flex-direction: column;
     align-items: stretch;
-    gap: 10px;
-    margin-bottom: 8px;
+    gap: 8px;
+    margin-bottom: 6px;
   }
 
   .brand-box {
@@ -726,7 +735,7 @@ tr:hover td {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     width: 100%;
   }
 
@@ -747,34 +756,95 @@ tr:hover td {
     padding: 4px 8px;
   }
 
-  /* Smooth scrollable tabs on phone with no ugly scrollbars */
-  nav.tabs {
-    gap: 2px;
-    margin: 6px 0 0;
-    padding-bottom: 2px;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
+  /* Hide top horizontal tabs on mobile in favor of bottom app bar */
+  .desktop-tabs {
+    display: none !important;
   }
 
-  nav.tabs::-webkit-scrollbar {
-    display: none;
+  /* Sleek Modern Mobile Bottom App Bar */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: rgba(10, 15, 28, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(63, 224, 197, 0.22);
+    z-index: 1000;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 2px;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.55);
   }
 
-  nav.tabs button {
-    padding: 9px 10px;
-    font-size: 12px;
-    gap: 4px;
+  .mobile-nav-btn {
+    background: transparent;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 2px;
+    flex: 1;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 8px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-nav-btn.active {
+    color: var(--accent);
+  }
+
+  .mobile-nav-icon-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+  }
+
+  .mobile-nav-btn.active .mobile-nav-icon-wrap {
+    transform: translateY(-2px) scale(1.1);
+    filter: drop-shadow(0 0 8px rgba(63, 224, 197, 0.65));
+  }
+
+  .mobile-live-dot {
+    position: absolute;
+    top: -2px;
+    right: -4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ef4444;
+    box-shadow: 0 0 6px #ef4444;
+    animation: pulse 1.2s infinite;
+  }
+
+  .mobile-nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 50px;
+    overflow: hidden;
   }
 
   /* Panels and Form Rows */
   .panel {
-    padding: 14px 12px;
-    border-radius: 8px;
+    padding: 16px 14px;
+    border-radius: 10px;
     margin-bottom: 14px;
   }
 
   .panel h2 {
-    font-size: 14.5px;
+    font-size: 15px;
   }
 
   .panel .hint {
@@ -783,7 +853,7 @@ tr:hover td {
 
   .row {
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
   }
 
   .col {
@@ -792,7 +862,14 @@ tr:hover td {
   }
 
   .cam-frame {
-    height: 240px;
+    height: 250px;
+    border-radius: 10px;
+  }
+
+  /* Touch-friendly Camera & Action buttons */
+  .btn {
+    padding: 10px 16px;
+    font-size: 13.5px;
     border-radius: 8px;
   }
 
@@ -803,12 +880,13 @@ tr:hover td {
   }
 
   th, td {
-    padding: 8px 10px;
+    padding: 9px 10px;
   }
 
   /* Modals */
   .modal-content {
-    padding: 16px 14px;
+    padding: 18px 14px;
     max-width: 95%;
+    border-radius: 12px;
   }
 }
