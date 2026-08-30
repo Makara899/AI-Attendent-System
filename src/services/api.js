@@ -1,5 +1,12 @@
 // API Service for communicating with backend SQLite server
-const API_BASE = '/api';
+const isLocal = typeof window !== 'undefined' && (
+  window.location.hostname === 'localhost' || 
+  window.location.hostname === '127.0.0.1'
+);
+
+const API_BASE = isLocal 
+  ? '/api' 
+  : (import.meta.env.VITE_API_URL || 'https://ai-attendent-system-production.up.railway.app/api');
 
 export const api = {
   // Health
