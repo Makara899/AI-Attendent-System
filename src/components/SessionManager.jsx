@@ -108,9 +108,14 @@ export default function SessionManager({
     try {
       const res = await api.deleteSession(id);
       if (res.success) {
+        setFeedback({ type: 'success', message: isKh ? `✔ បានលុប Session "${sessionName}" ដោយជោគជ័យ!` : `✔ Session "${sessionName}" deleted successfully!` });
+        if (editingId === id) cancelEdit();
         if (onSessionCreated) onSessionCreated();
+      } else {
+        setFeedback({ type: 'error', message: res.error || 'Failed to delete session.' });
       }
     } catch (e) {
+      setFeedback({ type: 'error', message: e.message });
       console.error('Delete session error:', e);
     }
   };

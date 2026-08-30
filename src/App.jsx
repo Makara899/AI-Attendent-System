@@ -77,10 +77,13 @@ export default function App() {
   const fetchSessions = async () => {
     try {
       const res = await api.getSessions();
-      if (res.success && res.data.length > 0) {
-        setSessions(res.data);
-        if (!activeSessionId) {
-          setActiveSessionId(res.data[0].id);
+      if (res.success) {
+        const list = res.data || [];
+        setSessions(list);
+        if (list.length === 0) {
+          setActiveSessionId(null);
+        } else if (!activeSessionId || !list.some(s => s.id === activeSessionId)) {
+          setActiveSessionId(list[0].id);
         }
       }
     } catch (e) {
