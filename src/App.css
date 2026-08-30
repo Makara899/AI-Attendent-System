@@ -497,7 +497,173 @@ tr:hover td {
 }
 
 .log .l .ep {
-  color: var(--text);
+  color: var(--text-dim);
+}
+
+/* Tab Pane Smooth Entry Transitions */
+.tab-pane, .dashboard-container {
+  animation: tabPaneFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes tabPaneFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Floating Check-in HUD Popover Card */
+.floating-scan-banner {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 18, 34, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1.5px solid var(--accent);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65), 0 0 24px rgba(63, 224, 197, 0.35);
+  border-radius: 12px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  z-index: 100;
+  max-width: 90%;
+  animation: bannerSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.floating-scan-banner.duplicate {
+  border-color: var(--warn);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65), 0 0 24px rgba(242, 184, 75, 0.35);
+}
+
+@keyframes bannerSlideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+.scan-banner-avatar {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 50%;
+  background: var(--panel-2);
+  border: 2px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-weight: 700;
+  color: #fff;
+}
+
+.scan-banner-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scan-banner-avatar.duplicate {
+  border-color: var(--warn);
+}
+
+.scan-banner-info {
+  text-align: left;
+}
+
+.scan-banner-name {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.scan-banner-sub {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  margin-top: 2px;
+}
+
+/* Biometric Registration Oval Guide */
+.face-align-guide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 190px;
+  height: 250px;
+  border: 2px dashed rgba(63, 224, 197, 0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 12px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+}
+
+.face-align-guide .guide-badge {
+  background: rgba(10, 15, 28, 0.85);
+  backdrop-filter: blur(8px);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(63, 224, 197, 0.3);
+  font-family: var(--sans);
+}
+
+/* Circular Attendance SVG Ring */
+.circular-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.circular-chart {
+  display: block;
+  margin: 0 auto;
+  max-width: 76px;
+  max-height: 76px;
+}
+
+.circle-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 3.8;
+}
+
+.circle {
+  fill: none;
+  stroke-width: 3.8;
+  stroke-linecap: round;
+  stroke: var(--accent);
+  transition: stroke-dasharray 0.8s ease;
+}
+
+.percentage {
+  fill: #fff;
+  font-family: var(--font-heading);
+  font-size: 0.55em;
+  font-weight: 700;
+  text-anchor: middle;
 }
 
 /* Messages & Alerts */
@@ -535,9 +701,9 @@ tr:hover td {
 
 /* Student Items */
 .thumb {
-  width: 52px;
-  height: 52px;
-  min-width: 52px;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
   border-radius: 10px;
   object-fit: cover;
   background: var(--panel-2);

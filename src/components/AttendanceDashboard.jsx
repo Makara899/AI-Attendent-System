@@ -118,16 +118,23 @@ export default function AttendanceDashboard({
           </div>
         </div>
 
-        {/* 5. Attendance Rate */}
+        {/* 5. Attendance Rate with Circular SVG Progress Ring */}
         <div className="kpi-card rate">
-          <div className="kpi-icon-box">
-            <TrendingUp size={22} />
-          </div>
-          <div className="kpi-info">
-            <span className="kpi-label">{isKh ? 'អត្រាវត្តមានសរុប' : 'Attendance Rate'}</span>
-            <h3 className="kpi-value text-primary">{stats.attendanceRate}%</h3>
-            <div className="rate-progress-bar">
-              <div className="rate-fill" style={{ width: `${Math.min(stats.attendanceRate, 100)}%` }}></div>
+          <div className="circular-progress-wrap">
+            <svg viewBox="0 0 36 36" className="circular-chart">
+              <path className="circle-bg"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              />
+              <path className="circle"
+                strokeDasharray={`${Math.min(Math.max(stats.attendanceRate, 0), 100)}, 100`}
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+              />
+              <text x="18" y="20.8" className="percentage">{stats.attendanceRate}%</text>
+            </svg>
+            <div className="kpi-info" style={{ flex: 1 }}>
+              <span className="kpi-label">{isKh ? 'អត្រាវត្តមានសរុប' : 'Attendance Rate'}</span>
+              <h3 className="kpi-value text-primary">{stats.attendanceRate}%</h3>
+              <span className="kpi-subtext">{stats.presentCount} of {stats.totalCount} present</span>
             </div>
           </div>
         </div>

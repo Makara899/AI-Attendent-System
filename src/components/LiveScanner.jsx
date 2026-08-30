@@ -307,7 +307,7 @@ export default function LiveScanner({
             : 'Look directly into camera for automated biometric matching and check-in.'}
         </p>
 
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', position: 'relative' }}>
           <div className={`cam-frame ${isCameraActive ? 'scanning' : ''}`}>
             <video ref={videoRef} playsInline muted autoPlay />
             <canvas ref={canvasRef} className="cam-overlay-canvas" />
@@ -321,12 +321,40 @@ export default function LiveScanner({
             {/* Laser Scanline */}
             <div className="scanline"></div>
 
+            {/* Floating Live Check-In Success / Duplicate Banner */}
+            {lastCheckInAlert && (
+              <div className={`floating-scan-banner ${lastCheckInAlert.type === 'duplicate' ? 'duplicate' : ''}`}>
+                <div className={`scan-banner-avatar ${lastCheckInAlert.type === 'duplicate' ? 'duplicate' : ''}`}>
+                  {lastCheckInAlert.student?.snapshot_url || lastCheckInAlert.student?.profile_photo ? (
+                    <img 
+                      src={getMediaUrl(lastCheckInAlert.student?.snapshot_url || lastCheckInAlert.student?.profile_photo)} 
+                      alt="Avatar" 
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                  ) : (
+                    <span>{lastCheckInAlert.student?.full_name?.charAt(0) || '✓'}</span>
+                  )}
+                </div>
+                <div className="scan-banner-info">
+                  <div className="scan-banner-name">
+                    {lastCheckInAlert.type === 'success' ? '✔ ' : '⚠ '}
+                    {lastCheckInAlert.student?.full_name || 'Student Verified'}
+                  </div>
+                  <div className="scan-banner-sub">
+                    {lastCheckInAlert.type === 'success'
+                      ? (isKh ? `បានកត់ត្រាវត្តមានម៉ោង ${lastCheckInAlert.time}` : `Checked in at ${lastCheckInAlert.time}`)
+                      : (isKh ? `បានចុះវត្តមានរួចរាល់ហើយ` : `Already checked in`)}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="cam-status">
               {isCameraActive ? (isKh ? 'កាមេរាកំពុងដំណើរការ' : 'LIVE AI SCANNING') : (isKh ? 'កាមេរាបិទ' : 'CAMERA OFF')}
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '12px' }}>
             {isCameraActive ? (
               <button className="btn danger" onClick={stopCamera}>
                 <CameraOff size={16} />

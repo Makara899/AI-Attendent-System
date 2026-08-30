@@ -366,6 +366,15 @@ export default function StudentRegistration({
                 }}
               />
 
+              {/* Biometric Face Alignment Oval Guide */}
+              {cameraActive && !capturedImage && (
+                <div className="face-align-guide">
+                  <span className="guide-badge">
+                    {isKh ? '👤 ដាក់មុខចំកណ្តាល' : '👤 Align Face Here'}
+                  </span>
+                </div>
+              )}
+
               {/* Photo Preview when snapped/uploaded */}
               {capturedImage && (
                 <img
