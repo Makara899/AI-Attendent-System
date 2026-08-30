@@ -11,6 +11,7 @@
     "start": "node server.js",
     "sync-db": "node sync-db.js",
     "view-db": "node view-db.js",
+    "view-cloud": "node view-cloud.js",
     "dev:all": "node start-all.js"
   },
   "dependencies": {
