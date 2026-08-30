@@ -321,34 +321,6 @@ export default function LiveScanner({
             {/* Laser Scanline */}
             <div className="scanline"></div>
 
-            {/* Floating Live Check-In Success / Duplicate Banner */}
-            {lastCheckInAlert && (
-              <div className={`floating-scan-banner ${lastCheckInAlert.type === 'duplicate' ? 'duplicate' : ''}`}>
-                <div className={`scan-banner-avatar ${lastCheckInAlert.type === 'duplicate' ? 'duplicate' : ''}`}>
-                  {lastCheckInAlert.student?.snapshot_url || lastCheckInAlert.student?.profile_photo ? (
-                    <img 
-                      src={getMediaUrl(lastCheckInAlert.student?.snapshot_url || lastCheckInAlert.student?.profile_photo)} 
-                      alt="Avatar" 
-                      onError={(e) => { e.target.style.display = 'none'; }}
-                    />
-                  ) : (
-                    <span>{lastCheckInAlert.student?.full_name?.charAt(0) || '✓'}</span>
-                  )}
-                </div>
-                <div className="scan-banner-info">
-                  <div className="scan-banner-name">
-                    {lastCheckInAlert.type === 'success' ? '✔ ' : '⚠ '}
-                    {lastCheckInAlert.student?.full_name || 'Student Verified'}
-                  </div>
-                  <div className="scan-banner-sub">
-                    {lastCheckInAlert.type === 'success'
-                      ? (isKh ? `បានកត់ត្រាវត្តមានម៉ោង ${lastCheckInAlert.time}` : `Checked in at ${lastCheckInAlert.time}`)
-                      : (isKh ? `បានចុះវត្តមានរួចរាល់ហើយ` : `Already checked in`)}
-                  </div>
-                </div>
-              </div>
-            )}
-
             <div className="cam-status">
               {isCameraActive ? (isKh ? 'កាមេរាកំពុងដំណើរការ' : 'LIVE AI SCANNING') : (isKh ? 'កាមេរាបិទ' : 'CAMERA OFF')}
             </div>
