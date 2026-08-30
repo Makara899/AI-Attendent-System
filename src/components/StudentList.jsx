@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Trash2, UserPlus } from 'lucide-react';
-import { api } from '../services/api';
+import { api, getMediaUrl } from '../services/api';
 
 export default function StudentList({
   students,
@@ -163,7 +163,7 @@ export default function StudentList({
                     </td>
                     <td>
                       <img
-                        src={s.photo_url || s.photo || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23263457"/></svg>'}
+                        src={getMediaUrl(s.photo_url || s.photo) || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23263457"/></svg>'}
                         alt=""
                         className="thumb"
                         style={{ width: '38px', height: '38px' }}

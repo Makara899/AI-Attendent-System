@@ -8,6 +8,13 @@ const API_BASE = isLocal
   ? '/api' 
   : (import.meta.env.VITE_API_URL || 'https://ai-attendent-system-production.up.railway.app/api');
 
+export const getMediaUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://')) return url;
+  const serverHost = isLocal ? '' : 'https://ai-attendent-system-production.up.railway.app';
+  return `${serverHost}${url.startsWith('/') ? '' : '/'}${url}`;
+};
+
 export const api = {
   // Health
   checkHealth: async () => {
