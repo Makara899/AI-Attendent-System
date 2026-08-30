@@ -189,8 +189,8 @@ class FaceService {
     let detections = [];
     try {
       const options = detectorType === 'tiny'
-        ? new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.25 })
-        : new faceapi.SsdMobilenetv1Options({ minConfidence: 0.30 });
+        ? new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.20 })
+        : new faceapi.SsdMobilenetv1Options({ minConfidence: 0.22 });
 
       detections = await faceapi
         .detectAllFaces(videoElement, options)

@@ -173,7 +173,7 @@ export default function LiveScanner({
       } catch (err) {
         console.warn('Face detection error:', err);
       }
-    }, 250);
+    }, 120);
   };
 
   const handleStudentRecognized = async (matchedStudent, confidence) => {
@@ -187,7 +187,7 @@ export default function LiveScanner({
     const now = Date.now();
 
     const lastSeen = cooldownMap.current.get(studentIdentifier) || 0;
-    if (now - lastSeen < 6000) return;
+    if (now - lastSeen < 3500) return;
     cooldownMap.current.set(studentIdentifier, now);
 
     let snapshotBase64 = null;
