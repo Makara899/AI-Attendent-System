@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "server": "node server.js",
     "start": "node server.js",
+    "sync-db": "node sync-db.js",
     "dev:all": "node start-all.js"
   },
   "dependencies": {
