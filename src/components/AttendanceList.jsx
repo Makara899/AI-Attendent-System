@@ -8,7 +8,7 @@ import {
   ShieldCheck, 
   RefreshCw 
 } from 'lucide-react';
-import { api, getMediaUrl } from '../services/api';
+import { api, getMediaUrl, formatDisplayTime } from '../services/api';
 
 export default function AttendanceList({
   summaryData,
@@ -119,7 +119,7 @@ export default function AttendanceList({
                       <div className="id">{r.student_code || r.student_id} · {r.check_in_method || 'AI_FACE'}</div>
                     </div>
                     <span className={`pill ${r.status === 'LATE' ? 'late' : 'present'}`}>
-                      {r.check_in_time} {r.status === 'LATE' ? '(LATE)' : ''}
+                      {formatDisplayTime(r.check_in_time, r.created_at)} {r.status === 'LATE' ? '(LATE)' : ''}
                     </span>
                     {r.id && (
                       <button className="btn ghost btn-sm" onClick={() => handleDelete(r.id, r.full_name)}>

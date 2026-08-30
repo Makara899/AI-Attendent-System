@@ -15,6 +15,29 @@ export const getMediaUrl = (url) => {
   return `${serverHost}${url.startsWith('/') ? '' : '/'}${url}`;
 };
 
+export const formatDisplayTime = (timeStr, createdAt) => {
+  if (createdAt) {
+    try {
+      const utcStr = createdAt.includes('Z') || createdAt.includes('+') 
+        ? createdAt 
+        : `${createdAt.replace(' ', 'T')}Z`;
+      const dateObj = new Date(utcStr);
+      if (!isNaN(dateObj.getTime())) {
+        return dateObj.toLocaleTimeString('en-GB', {
+          timeZone: 'Asia/Phnom_Penh',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        });
+      }
+    } catch (e) {
+      console.warn('Time format error:', e);
+    }
+  }
+  if (timeStr && timeStr !== '-') return timeStr;
+  return '--:--';
+};
+
 export const api = {
   // Health
   checkHealth: async () => {

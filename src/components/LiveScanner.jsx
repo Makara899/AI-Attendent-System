@@ -162,11 +162,11 @@ export default function LiveScanner({
     try {
       if (videoRef.current) {
         const snapCanvas = document.createElement('canvas');
-        snapCanvas.width = 240;
-        snapCanvas.height = 180;
+        snapCanvas.width = 480;
+        snapCanvas.height = 360;
         const ctx = snapCanvas.getContext('2d');
-        ctx.drawImage(videoRef.current, 0, 0, 240, 180);
-        snapshotBase64 = snapCanvas.toDataURL('image/jpeg', 0.7);
+        ctx.drawImage(videoRef.current, 0, 0, 480, 360);
+        snapshotBase64 = snapCanvas.toDataURL('image/jpeg', 0.92);
       }
     } catch (e) {
       console.warn('Snapshot error:', e);

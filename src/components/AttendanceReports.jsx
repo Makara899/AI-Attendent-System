@@ -5,7 +5,7 @@ import {
   Search, 
   Download
 } from 'lucide-react';
-import { api } from '../services/api';
+import { api, formatDisplayTime } from '../services/api';
 import { exportService } from '../services/exportService';
 
 export default function AttendanceReports({ activeSession, sessions = [], language }) {
@@ -247,7 +247,7 @@ export default function AttendanceReports({ activeSession, sessions = [], langua
                     <td>{r.class_name}</td>
                     <td>{r.session_name || r.course_name || 'Class Session'}</td>
                     <td>{r.date}</td>
-                    <td style={{ fontFamily: 'var(--mono)' }}>{r.check_in_time}</td>
+                    <td style={{ fontFamily: 'var(--mono)' }}>{formatDisplayTime(r.check_in_time, r.created_at)}</td>
                     <td>
                       <span className={`pill ${r.status === 'LATE' ? 'late' : 'present'}`}>
                         {r.status}

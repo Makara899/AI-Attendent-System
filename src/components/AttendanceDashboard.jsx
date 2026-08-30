@@ -15,7 +15,7 @@ import {
   GraduationCap,
   Percent
 } from 'lucide-react';
-import { getMediaUrl } from '../services/api';
+import { getMediaUrl, formatDisplayTime } from '../services/api';
 
 export default function AttendanceDashboard({
   summaryData,
@@ -168,7 +168,7 @@ export default function AttendanceDashboard({
                   </div>
                   <div className="mini-info">
                     <span className="mini-name">{item.full_name}</span>
-                    <span className="mini-sub">{item.student_code} • ⏱ {item.check_in_time}</span>
+                    <span className="mini-sub">{item.student_code} • ⏱ {formatDisplayTime(item.check_in_time, item.created_at)}</span>
                   </div>
                   <div className="mini-badge">
                     <span className={`status-pill-sm ${item.status === 'LATE' ? 'late' : 'present'}`}>
