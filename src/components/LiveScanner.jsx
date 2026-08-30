@@ -54,6 +54,7 @@ export default function LiveScanner({
   }, [students, distanceThreshold]);
 
   const startCamera = async () => {
+    soundService.unlockAudio();
     setCameraLoading(true);
     setCameraError(null);
     try {

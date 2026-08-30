@@ -15,6 +15,7 @@ import {
   GraduationCap,
   Percent
 } from 'lucide-react';
+import { getMediaUrl } from '../services/api';
 
 export default function AttendanceDashboard({
   summaryData,
@@ -155,8 +156,12 @@ export default function AttendanceDashboard({
               [...presentList, ...lateList].slice(0, 6).map((item) => (
                 <div key={item.id} className="mini-student-row">
                   <div className="mini-avatar">
-                    {item.snapshot_url ? (
-                      <img src={item.snapshot_url} alt="Snap" />
+                    {item.snapshot_url || item.profile_photo ? (
+                      <img 
+                        src={getMediaUrl(item.snapshot_url || item.profile_photo)} 
+                        alt="Snap" 
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
                     ) : (
                       <span>{item.full_name?.charAt(0)}</span>
                     )}

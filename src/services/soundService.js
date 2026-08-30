@@ -5,6 +5,20 @@ class SoundService {
     this.audioCtx = null;
     this.enabled = true;
     this.speechEnabled = true;
+    this.isUnlocked = false;
+
+    // Auto-unlock audio and speech on first user interaction (crucial for mobile iOS/Android)
+    if (typeof window !== 'undefined') {
+      const unlockHandler = () => {
+        this.unlockAudio();
+        window.removeEventListener('click', unlockHandler);
+        window.removeEventListener('touchstart', unlockHandler);
+        window.removeEventListener('touchend', unlockHandler);
+      };
+      window.addEventListener('click', unlockHandler, { passive: true });
+      window.addEventListener('touchstart', unlockHandler, { passive: true });
+      window.addEventListener('touchend', unlockHandler, { passive: true });
+    }
   }
 
   getAudioContext() {
@@ -20,12 +34,39 @@ class SoundService {
     return this.audioCtx;
   }
 
+  // Explicitly unlock audio on mobile when user taps Start Camera or screen
+  unlockAudio() {
+    try {
+      const ctx = this.getAudioContext();
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      // Unlock mobile speech synthesis (iOS Safari / Android Chrome requirement)
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+        const dummyUtterance = new SpeechSynthesisUtterance('');
+        dummyUtterance.volume = 0;
+        window.speechSynthesis.speak(dummyUtterance);
+      }
+      this.isUnlocked = true;
+    } catch (e) {
+      console.warn('Audio unlock warning:', e);
+    }
+  }
+
   // Pleasant success chime using Web Audio API oscillator
   playSuccessChime() {
     if (!this.enabled) return;
     try {
       const ctx = this.getAudioContext();
       if (!ctx) return;
+
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
 
       const now = ctx.currentTime;
       // High pleasant two-tone chime (E5 -> G#5 -> B5)
@@ -58,6 +99,10 @@ class SoundService {
     try {
       const ctx = this.getAudioContext();
       if (!ctx) return;
+
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
 
       const now = ctx.currentTime;
       const notes = [440, 370];

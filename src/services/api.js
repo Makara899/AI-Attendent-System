@@ -108,7 +108,11 @@ export const api = {
   },
 
   // Attendance
-  checkIn: async ({ student_id, session_id, confidence_score, snapshot_base64, notes }) => {
+  checkIn: async ({ student_id, session_id, confidence_score, snapshot_base64, notes, check_in_time, date }) => {
+    const now = new Date();
+    const localTime = check_in_time || `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const localDate = date || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
     const res = await fetch(`${API_BASE}/attendance/check-in`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -117,13 +121,19 @@ export const api = {
         session_id,
         confidence_score,
         snapshot_base64,
-        notes
+        notes,
+        check_in_time: localTime,
+        date: localDate
       }),
     });
     return res.json();
   },
 
-  manualOverride: async ({ student_id, session_id, status, reason, notes, teacher_name }) => {
+  manualOverride: async ({ student_id, session_id, status, reason, notes, teacher_name, check_in_time, date }) => {
+    const now = new Date();
+    const localTime = check_in_time || `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const localDate = date || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
     const res = await fetch(`${API_BASE}/attendance/manual-override`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -133,7 +143,9 @@ export const api = {
         status,
         reason,
         notes,
-        teacher_name
+        teacher_name,
+        check_in_time: localTime,
+        date: localDate
       }),
     });
     return res.json();

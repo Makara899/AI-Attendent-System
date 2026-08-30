@@ -41,7 +41,30 @@ const upload = multer({ storage });
 // SQLite Database Setup using Node 24 Native node:sqlite
 const dbPath = path.join(__dirname, 'attendance.db');
 const db = new DatabaseSync(dbPath);
-console.log('✅ Connected to SQLite database:', dbPath);
+// Timezone helper for Asia/Phnom_Penh (UTC+7) or client requested local time
+function getLocalDateTime(clientDate, clientTime) {
+  if (clientDate && clientTime) {
+    return { date: clientDate, time: clientTime };
+  }
+  const now = new Date();
+  const timeFormatter = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Phnom_Penh',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+  const dateFormatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Phnom_Penh',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+
+  return {
+    date: clientDate || dateFormatter.format(now),
+    time: clientTime || timeFormatter.format(now)
+  };
+}
 
 // Initialize Tables & Seed
 function initDatabase() {
@@ -110,7 +133,7 @@ function initDatabase() {
     // Ensure active session exists if empty
     const sessionCount = db.prepare('SELECT COUNT(*) as count FROM sessions').get();
     if (sessionCount.count === 0) {
-      const today = new Date().toISOString().split('T')[0];
+      const today = getLocalDateTime().date;
       const insertSession = db.prepare(`
         INSERT INTO sessions (session_code, name, course_name, major, lecturer, room, class_name, session_date, start_time, end_time, status)
         VALUES ('CS-401-M', 'Morning Session - AI & Computer Vision', 'CS-401: Artificial Intelligence', 'Computer Science', 'Dr. Sokha', 'Room 304', 'Year4 S1', ?, '08:00', '11:00', 'ACTIVE')
@@ -132,7 +155,7 @@ initDatabase();
 
 // 1. Health Check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', db: 'sqlite-native', time: new Date().toISOString() });
+  res.json({ status: 'ok', db: 'sqlite-native', time: getLocalDateTime() });
 });
 
 // Admin: Clear all data
@@ -159,7 +182,7 @@ app.post('/api/admin/clear-all', (req, res) => {
     }
 
     // Seed 1 active session
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateTime().date;
     const insertSession = db.prepare(`
       INSERT INTO sessions (session_code, name, course_name, major, lecturer, room, class_name, session_date, start_time, end_time, status)
       VALUES ('CS-401-M', 'Morning Session - AI & Computer Vision', 'CS-401: Artificial Intelligence', 'Computer Science', 'Dr. Sokha', 'Room 304', 'Year4 S1', ?, '08:00', '11:00', 'ACTIVE')
@@ -448,9 +471,7 @@ app.post('/api/attendance/check-in', (req, res) => {
     const finalStudentDbId = student.id;
     const finalSessionId = session.id;
 
-    const now = new Date();
-    const today = now.toISOString().split('T')[0];
-    const currentTime = now.toTimeString().split(' ')[0].substring(0, 5); // HH:MM
+    const { date: today, time: currentTime } = getLocalDateTime(req.body.date, req.body.check_in_time);
 
     // DUPLICATE CHECK: Prevent duplicate check-in for the same session today
     const existing = db.prepare(`
@@ -537,9 +558,7 @@ app.post('/api/attendance/manual-override', (req, res) => {
     const student = db.prepare('SELECT * FROM students WHERE id = ?').get(student_id);
     if (!student) return res.status(404).json({ success: false, error: 'Student not found' });
 
-    const now = new Date();
-    const today = now.toISOString().split('T')[0];
-    const currentTime = now.toTimeString().split(' ')[0].substring(0, 5);
+    const { date: today, time: currentTime } = getLocalDateTime(req.body.date, req.body.check_in_time);
 
     const existing = db.prepare(`
       SELECT * FROM attendance WHERE student_id = ? AND session_id = ? AND date = ?
@@ -598,7 +617,7 @@ app.get('/api/attendance/summary', (req, res) => {
     const session = db.prepare('SELECT * FROM sessions WHERE id = ?').get(session_id);
     if (!session) return res.status(404).json({ success: false, error: 'Session not found' });
 
-    const queryDate = date || session.session_date || new Date().toISOString().split('T')[0];
+    const queryDate = date || session.session_date || getLocalDateTime().date;
 
     // Enrolled students in class
     const totalStudents = db.prepare(

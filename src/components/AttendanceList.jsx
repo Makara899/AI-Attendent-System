@@ -8,7 +8,7 @@ import {
   ShieldCheck, 
   RefreshCw 
 } from 'lucide-react';
-import { api } from '../services/api';
+import { api, getMediaUrl } from '../services/api';
 
 export default function AttendanceList({
   summaryData,
@@ -106,9 +106,13 @@ export default function AttendanceList({
                 {filteredPresent.map((r, idx) => (
                   <div key={r.id || idx} className="student-item">
                     <img 
-                      src={r.profile_photo || r.snapshot_url || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23263457"/></svg>'} 
+                      src={getMediaUrl(r.profile_photo || r.snapshot_url) || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23263457"/><text x="12" y="16" font-size="10" fill="%2394a3b8" text-anchor="middle">👤</text></svg>'} 
                       alt="" 
                       className="thumb" 
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23263457"/><text x="12" y="16" font-size="10" fill="%2394a3b8" text-anchor="middle">👤</text></svg>';
+                      }}
                     />
                     <div className="meta">
                       <div className="nm">{r.full_name}</div>
@@ -142,9 +146,13 @@ export default function AttendanceList({
                 {filteredAbsent.map((s, idx) => (
                   <div key={s.student_id || idx} className="student-item">
                     <img 
-                      src={s.profile_photo || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23263457"/></svg>'} 
+                      src={getMediaUrl(s.profile_photo) || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23263457"/><text x="12" y="16" font-size="10" fill="%2394a3b8" text-anchor="middle">👤</text></svg>'} 
                       alt="" 
                       className="thumb" 
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23263457"/><text x="12" y="16" font-size="10" fill="%2394a3b8" text-anchor="middle">👤</text></svg>';
+                      }}
                     />
                     <div className="meta">
                       <div className="nm">{s.full_name}</div>
