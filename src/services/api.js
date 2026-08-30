@@ -6,12 +6,12 @@ const isLocal = typeof window !== 'undefined' && (
 
 const API_BASE = isLocal 
   ? '/api' 
-  : (import.meta.env.VITE_API_URL || 'https://ai-attendent-system-production.up.railway.app/api');
+  : (import.meta.env.VITE_API_URL || 'https://ai-attendent-system.onrender.com/api');
 
 export const getMediaUrl = (url) => {
   if (!url) return '';
   if (url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://')) return url;
-  const serverHost = isLocal ? '' : 'https://ai-attendent-system-production.up.railway.app';
+  const serverHost = isLocal ? '' : 'https://ai-attendent-system.onrender.com';
   return `${serverHost}${url.startsWith('/') ? '' : '/'}${url}`;
 };
 
