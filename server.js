@@ -107,32 +107,16 @@ function initDatabase() {
     try { db.exec("ALTER TABLE sessions ADD COLUMN lecturer TEXT DEFAULT 'Professor'"); } catch(e) {}
     try { db.exec("ALTER TABLE sessions ADD COLUMN room TEXT DEFAULT 'Room 101'"); } catch(e) {}
 
-    // Seed default session if empty
+    // Ensure active session exists if empty
     const sessionCount = db.prepare('SELECT COUNT(*) as count FROM sessions').get();
     if (sessionCount.count === 0) {
       const today = new Date().toISOString().split('T')[0];
       const insertSession = db.prepare(`
         INSERT INTO sessions (session_code, name, course_name, major, lecturer, room, class_name, session_date, start_time, end_time, status)
-        VALUES (?, ?, ?, 'Computer Science', 'Dr. Sokha', 'Room 304', ?, ?, ?, ?, 'ACTIVE')
+        VALUES ('CS-401-M', 'Morning Session - AI & Computer Vision', 'CS-401: Artificial Intelligence', 'Computer Science', 'Dr. Sokha', 'Room 304', 'Year4 S1', ?, '08:00', '11:00', 'ACTIVE')
       `);
-      insertSession.run('CS-101-M', 'Morning Session - AI & Computer Vision', 'CS-101: Artificial Intelligence', 'Year 3 - CS A', today, '08:00', '11:00');
-      insertSession.run('CS-102-A', 'Afternoon Session - Full-Stack Web Dev', 'CS-102: Web Application Engineering', 'Year 3 - CS A', today, '13:30', '16:30');
-      console.log('🌱 Seeded default sessions.');
-    }
-
-    // Seed demo students if empty
-    const studentCount = db.prepare('SELECT COUNT(*) as count FROM students').get();
-    if (studentCount.count === 0) {
-      const insertStudent = db.prepare(`
-        INSERT INTO students (student_id, full_name, gender, major, email, phone, class_name)
-        VALUES (?, ?, ?, 'Computer Science', ?, ?, ?)
-      `);
-      insertStudent.run('STU-001', 'Chan Ratanak (ចាន់ រតនៈ)', 'Male', 'ratanak.chan@university.edu.kh', '077 112 233', 'Year 3 - CS A');
-      insertStudent.run('STU-002', 'Chea Monika (ជា ម៉ូនីកា)', 'Female', 'monika.chea@university.edu.kh', '098 765 432', 'Year 3 - CS A');
-      insertStudent.run('STU-003', 'Keo Davit (កែវ ដាវីត)', 'Male', 'davit.keo@university.edu.kh', '099 887 766', 'Year 3 - CS A');
-      insertStudent.run('STU-004', 'Seng Sreyneang (សេង ស្រីនាង)', 'Female', 'sreyneang.seng@university.edu.kh', '088 445 566', 'Year 3 - CS A');
-      insertStudent.run('STU-005', 'Sovann Sokha (សុវណ្ណ សុខា)', 'Male', 'sokha.sovann@university.edu.kh', '012 345 678', 'Year 3 - CS A');
-      console.log('🌱 Seeded demo students.');
+      insertSession.run(today);
+      console.log('🌱 Seeded 1 default active session.');
     }
 
   } catch (error) {
@@ -149,6 +133,43 @@ initDatabase();
 // 1. Health Check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', db: 'sqlite-native', time: new Date().toISOString() });
+});
+
+// Admin: Clear all data
+app.post('/api/admin/clear-all', (req, res) => {
+  try {
+    db.exec(`
+      DELETE FROM attendance;
+      DELETE FROM students;
+      DELETE FROM sessions;
+      DELETE FROM system_logs;
+      DELETE FROM sqlite_sequence WHERE name IN ('attendance', 'students', 'sessions', 'system_logs');
+    `);
+
+    // Clean uploads
+    if (fs.existsSync(uploadDir)) {
+      fs.readdirSync(uploadDir).forEach(f => {
+        try { fs.unlinkSync(path.join(uploadDir, f)); } catch(e) {}
+      });
+    }
+    if (fs.existsSync(snapshotsDir)) {
+      fs.readdirSync(snapshotsDir).forEach(f => {
+        try { fs.unlinkSync(path.join(snapshotsDir, f)); } catch(e) {}
+      });
+    }
+
+    // Seed 1 active session
+    const today = new Date().toISOString().split('T')[0];
+    const insertSession = db.prepare(`
+      INSERT INTO sessions (session_code, name, course_name, major, lecturer, room, class_name, session_date, start_time, end_time, status)
+      VALUES ('CS-401-M', 'Morning Session - AI & Computer Vision', 'CS-401: Artificial Intelligence', 'Computer Science', 'Dr. Sokha', 'Room 304', 'Year4 S1', ?, '08:00', '11:00', 'ACTIVE')
+    `);
+    insertSession.run(today);
+
+    res.json({ success: true, message: 'All database tables and photo files wiped completely.' });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 // 2. Students API (Sorted A-Z by Full Name)
