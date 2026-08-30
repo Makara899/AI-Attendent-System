@@ -186,9 +186,10 @@ export default function LiveScanner({
     const studentIdentifier = matchedStudent.id || matchedStudent.student_id;
     const now = Date.now();
 
-    const lastSeen = cooldownMap.current.get(studentIdentifier) || 0;
-    if (now - lastSeen < 3500) return;
-    cooldownMap.current.set(studentIdentifier, now);
+    const cooldownUntil = cooldownMap.current.get(studentIdentifier) || 0;
+    if (now < cooldownUntil) return;
+    // Set safety lock during network and speech playback
+    cooldownMap.current.set(studentIdentifier, now + 15000);
 
     let snapshotBase64 = null;
     try {
@@ -214,10 +215,6 @@ export default function LiveScanner({
       });
 
       if (response.success) {
-        if (soundEnabled) {
-          soundService.playSuccessChime();
-          soundService.speakCheckInSuccess(matchedStudent.full_name || response.data?.full_name, language);
-        }
         confetti({ particleCount: 40, spread: 60, origin: { y: 0.6 } });
 
         const checkTime = formatDisplayTime(response.data?.check_in_time, response.data?.created_at);
@@ -229,11 +226,17 @@ export default function LiveScanner({
         });
 
         setRecentCheckIns(prev => [response.data, ...prev.slice(0, 14)]);
-      } else if (response.isDuplicate) {
+
         if (soundEnabled) {
-          soundService.playWarningSound();
-          soundService.speakAlreadyCheckedIn(matchedStudent.full_name, language);
+          soundService.playSuccessChime();
+          // Wait for speech to completely finish speaking
+          await soundService.speakCheckInSuccess(matchedStudent.full_name || response.data?.full_name, language);
         }
+
+        // Wait an additional 2.5 seconds after speaking ends before duplicate scan can trigger
+        cooldownMap.current.set(studentIdentifier, Date.now() + 2500);
+
+      } else if (response.isDuplicate) {
         const checkTime = formatDisplayTime(response.data?.check_in_time, response.data?.created_at);
         const dupMsg = `${matchedStudent.full_name} (${matchedStudent.student_id || matchedStudent.student_code || ''}) ${isKh ? 'បានចុះវត្តមាននៅម៉ោង' : 'has already checked in at'} ${checkTime}.`;
         setLastCheckInAlert({
@@ -241,9 +244,19 @@ export default function LiveScanner({
           message: dupMsg,
           student: matchedStudent
         });
+
+        if (soundEnabled) {
+          soundService.playWarningSound();
+          // Wait for speech to completely finish speaking
+          await soundService.speakAlreadyCheckedIn(matchedStudent.full_name, language);
+        }
+
+        // Wait 3 seconds after duplicate speaking ends before next duplicate notice can trigger
+        cooldownMap.current.set(studentIdentifier, Date.now() + 3000);
       }
     } catch (err) {
       console.error('Check-in error:', err);
+      cooldownMap.current.set(studentIdentifier, Date.now() + 2000);
     }
   };
 

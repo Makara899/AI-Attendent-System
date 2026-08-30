@@ -6,9 +6,24 @@ class SoundService {
     this.enabled = true;
     this.speechEnabled = true;
     this.isUnlocked = false;
+    this.currentUtterance = null;
+    this.voices = [];
 
-    // Auto-unlock audio and speech on first user interaction (crucial for mobile iOS/Android)
-    if (typeof window !== 'undefined') {
+    // Pre-cache voices when available in browser
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      const loadVoices = () => {
+        try {
+          this.voices = window.speechSynthesis.getVoices() || [];
+        } catch (e) {
+          // ignore
+        }
+      };
+      loadVoices();
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+      }
+
+      // Auto-unlock audio and speech on first user interaction (crucial for mobile iOS/Android)
       const unlockHandler = () => {
         this.unlockAudio();
         window.removeEventListener('click', unlockHandler);
@@ -164,91 +179,140 @@ class SoundService {
 
   // Speaks student name first when attendance is checked in successfully
   speakCheckInSuccess(rawName, language = 'en') {
-    this.speakCustom(rawName, 'success', language);
+    return this.speakCustom(rawName, 'success', language);
   }
 
-  // Speaks student name first when already checked in: e.g. "Sambath Makara is already checked in"
+  // Speaks student name first when already checked in: e.g. "Sambath Makara, already checked in"
   speakAlreadyCheckedIn(rawName, language = 'en') {
-    this.speakCustom(rawName, 'duplicate', language);
+    return this.speakCustom(rawName, 'duplicate', language);
   }
 
-  // Speak custom structured message (Takes Student Name First!)
+  // Speak custom structured message with the student's name (Returns Promise when speech ends)
   speakCustom(rawName, type = 'success', language = 'en') {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    try {
-      window.speechSynthesis.cancel(); // Stop prior speech
-      if (window.speechSynthesis.paused) {
-        window.speechSynthesis.resume();
+    return new Promise((resolve) => {
+      if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+        return resolve();
+      }
+      if (!this.enabled || !this.speechEnabled || !rawName) {
+        return resolve();
       }
 
-      if (!rawName) return;
-
-      const voices = window.speechSynthesis.getVoices() || [];
-      const khmerVoice = voices.find(v => v.lang.startsWith('km') || v.lang.includes('Khmer'));
-
-      // Check if rawName contains Latin letters
-      const latinSegments = (rawName.match(/[a-zA-Z\s]{2,}/g) || [])
-        .map(s => s.trim())
-        .filter(s => s.length >= 2);
-
-      let spokenName = '';
-      let targetLang = 'en-US';
-      let selectedVoice = null;
-
-      if (latinSegments.length > 0) {
-        // Sort by length to pick the full English name
-        spokenName = latinSegments.sort((a, b) => b.length - a.length)[0];
-      } else if (khmerVoice) {
-        spokenName = rawName;
-        selectedVoice = khmerVoice;
-        targetLang = khmerVoice.lang;
-      } else {
-        spokenName = this.transliterateKhmer(rawName) || 'Student';
-      }
-
-      let sentence = '';
-      if (type === 'duplicate') {
-        if (selectedVoice && targetLang.startsWith('km')) {
-          sentence = `${spokenName} បានចុះវត្តមានរួចរាល់ហើយ`;
-        } else {
-          // Format: "Sambath Makara is already checked in"
-          sentence = `${spokenName} is already checked in`;
+      try {
+        window.speechSynthesis.cancel(); // Cancel any lingering speech
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
         }
-      } else {
-        if (selectedVoice && targetLang.startsWith('km')) {
-          sentence = `${spokenName} បានកត់ត្រាវត្តមានជោគជ័យ`;
-        } else {
-          // Format: "Sambath Makara, checked in successfully"
-          sentence = `${spokenName}, checked in successfully`;
+
+        const voices = (this.voices && this.voices.length > 0) 
+          ? this.voices 
+          : (window.speechSynthesis.getVoices() || []);
+        
+        const khmerVoice = voices.find(v => v.lang.startsWith('km') || v.lang.includes('Khmer'));
+
+        // Clean raw name: extract English alphabet name if bracketed/mixed (e.g., "សុខ ចាន់ (Sok Chan)" -> "Sok Chan")
+        let cleanName = rawName.toString().trim();
+        const parenthesizedMatch = cleanName.match(/\(([a-zA-Z\s]+)\)/);
+        if (parenthesizedMatch && parenthesizedMatch[1]) {
+          cleanName = parenthesizedMatch[1].trim();
         }
+
+        // Check if cleaned name contains Latin letters
+        const latinSegments = (cleanName.match(/[a-zA-Z\s]{2,}/g) || [])
+          .map(s => s.trim())
+          .filter(s => s.length >= 2);
+
+        let spokenName = '';
+        let targetLang = 'en-US';
+        let selectedVoice = null;
+
+        if (latinSegments.length > 0) {
+          // Sort by length to pick the most descriptive Latin name
+          spokenName = latinSegments.sort((a, b) => b.length - a.length)[0];
+        } else if (khmerVoice) {
+          spokenName = cleanName;
+          selectedVoice = khmerVoice;
+          targetLang = khmerVoice.lang;
+        } else {
+          spokenName = this.transliterateKhmer(cleanName) || 'Student';
+        }
+
+        // Construct audio message
+        let sentence = '';
+        if (type === 'duplicate') {
+          if (selectedVoice && targetLang.startsWith('km')) {
+            sentence = `${spokenName} បានចុះវត្តមានរួចរាល់ហើយ`;
+          } else {
+            sentence = `${spokenName}, already checked in`;
+          }
+        } else {
+          if (selectedVoice && targetLang.startsWith('km')) {
+            sentence = `${spokenName} បានកត់ត្រាវត្តមានជោគជ័យ`;
+          } else {
+            sentence = `${spokenName}, checked in successfully`;
+          }
+        }
+
+        const utterance = new SpeechSynthesisUtterance(sentence);
+        utterance.rate = 0.92;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+        utterance.lang = targetLang;
+
+        if (selectedVoice) {
+          utterance.voice = selectedVoice;
+        } else if (voices.length > 0) {
+          const preferredVoice = voices.find(v => 
+            v.lang.startsWith('en') && 
+            (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Microsoft') || v.name.includes('Samantha') || v.name.includes('Jenny') || v.name.includes('Guy'))
+          ) || voices.find(v => v.lang.startsWith('en'));
+
+          if (preferredVoice) utterance.voice = preferredVoice;
+        }
+
+        let isResolved = false;
+        const done = () => {
+          if (!isResolved) {
+            isResolved = true;
+            this.currentUtterance = null;
+            resolve();
+          }
+        };
+
+        // Safety fallback timer in case browser does not trigger onend
+        const safetyTimeout = setTimeout(done, 5500);
+
+        // Keep strong reference to prevent GC cutting speech off
+        this.currentUtterance = utterance;
+        utterance.onend = () => {
+          clearTimeout(safetyTimeout);
+          done();
+        };
+        utterance.onerror = () => {
+          clearTimeout(safetyTimeout);
+          done();
+        };
+
+        // Slight timeout prevents Chrome race conditions after cancel()
+        setTimeout(() => {
+          try {
+            window.speechSynthesis.speak(utterance);
+          } catch (err) {
+            console.warn('Speech synthesis speak error:', err);
+            clearTimeout(safetyTimeout);
+            done();
+          }
+        }, 50);
+
+      } catch (e) {
+        console.warn('TTS Error:', e);
+        resolve();
       }
-
-      const utterance = new SpeechSynthesisUtterance(sentence);
-      utterance.rate = 0.88;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
-      utterance.lang = targetLang;
-
-      if (selectedVoice) {
-        utterance.voice = selectedVoice;
-      } else if (voices.length > 0) {
-        const preferredVoice = voices.find(v => 
-          v.lang.startsWith('en') && 
-          (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Microsoft') || v.name.includes('Samantha') || v.name.includes('Jenny') || v.name.includes('Guy'))
-        ) || voices.find(v => v.lang.startsWith('en'));
-
-        if (preferredVoice) utterance.voice = preferredVoice;
-      }
-
-      window.speechSynthesis.speak(utterance);
-    } catch (e) {
-      console.warn('TTS Error:', e);
-    }
+    });
   }
 
   // Legacy fallback
   speakName(rawName) {
-    this.speakCheckInSuccess(rawName);
+    return this.speakCheckInSuccess(rawName);
   }
 }
 
