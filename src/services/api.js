@@ -16,12 +16,32 @@ export const getMediaUrl = (url) => {
 };
 
 export const formatDisplayTime = (timeStr, createdAt) => {
+  // 1. Prioritize explicit check_in_time if present
+  if (timeStr && timeStr !== '-' && timeStr !== '--:--') {
+    const trimmed = String(timeStr).trim();
+    // If already in 12h AM/PM format (e.g., "8:10 PM")
+    if (trimmed.toLowerCase().includes('am') || trimmed.toLowerCase().includes('pm')) {
+      return trimmed;
+    }
+    // If in 24h format (e.g., "20:10" or "08:10:00")
+    const parts = trimmed.split(':');
+    if (parts.length >= 2) {
+      let h = parseInt(parts[0], 10);
+      const m = parts[1].substring(0, 2);
+      if (!isNaN(h)) {
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12;
+        h = h ? h : 12;
+        return `${h}:${m} ${ampm}`;
+      }
+    }
+    return trimmed;
+  }
+
+  // 2. Fallback to createdAt timestamp only if timeStr is missing
   if (createdAt) {
     try {
-      const utcStr = createdAt.includes('Z') || createdAt.includes('+') 
-        ? createdAt 
-        : `${createdAt.replace(' ', 'T')}Z`;
-      const dateObj = new Date(utcStr);
+      const dateObj = new Date(createdAt);
       if (!isNaN(dateObj.getTime())) {
         return dateObj.toLocaleTimeString('en-US', {
           timeZone: 'Asia/Phnom_Penh',
@@ -35,21 +55,6 @@ export const formatDisplayTime = (timeStr, createdAt) => {
     }
   }
 
-  if (timeStr && timeStr !== '-') {
-    if (timeStr.includes('AM') || timeStr.includes('PM')) {
-      return timeStr;
-    }
-    const parts = timeStr.split(':');
-    if (parts.length >= 2) {
-      let h = parseInt(parts[0], 10);
-      const m = parts[1].substring(0, 2);
-      const ampm = h >= 12 ? 'PM' : 'AM';
-      h = h % 12;
-      h = h ? h : 12;
-      return `${h}:${m} ${ampm}`;
-    }
-    return timeStr;
-  }
   return '--:--';
 };
 
@@ -148,13 +153,20 @@ export const api = {
   // Attendance
   checkIn: async ({ student_id, session_id, confidence_score, snapshot_base64, notes, check_in_time, date }) => {
     const now = new Date();
-    const localTime = check_in_time || now.toLocaleTimeString('en-US', {
+    const timeFormatter = new Intl.DateTimeFormat('en-GB', {
       timeZone: 'Asia/Phnom_Penh',
-      hour: 'numeric',
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: true
+      hour12: false
     });
-    const localDate = date || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const dateFormatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Phnom_Penh',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+    const localTime = check_in_time || timeFormatter.format(now);
+    const localDate = date || dateFormatter.format(now);
 
     const res = await fetch(`${API_BASE}/attendance/check-in`, {
       method: 'POST',
@@ -174,13 +186,20 @@ export const api = {
 
   manualOverride: async ({ student_id, session_id, status, reason, notes, teacher_name, check_in_time, date }) => {
     const now = new Date();
-    const localTime = check_in_time || now.toLocaleTimeString('en-US', {
+    const timeFormatter = new Intl.DateTimeFormat('en-GB', {
       timeZone: 'Asia/Phnom_Penh',
-      hour: 'numeric',
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: true
+      hour12: false
     });
-    const localDate = date || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const dateFormatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Phnom_Penh',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+    const localTime = check_in_time || timeFormatter.format(now);
+    const localDate = date || dateFormatter.format(now);
 
     const res = await fetch(`${API_BASE}/attendance/manual-override`, {
       method: 'POST',

@@ -40,17 +40,17 @@ const upload = multer({ storage, limits: { fileSize: 25 * 1024 * 1024 } });
 const dbPath = path.join(__dirname, 'attendance.db');
 const db = new DatabaseSync(dbPath);
 
-// Timezone helper for Asia/Phnom_Penh (UTC+7) in 12-hour AM/PM format
+// Timezone helper for Asia/Phnom_Penh (UTC+7)
 function getLocalDateTime(clientDate, clientTime) {
   if (clientDate && clientTime) {
     return { date: clientDate, time: clientTime };
   }
   const now = new Date();
-  const timeFormatter = new Intl.DateTimeFormat('en-US', {
+  const timeFormatter = new Intl.DateTimeFormat('en-GB', {
     timeZone: 'Asia/Phnom_Penh',
-    hour: 'numeric',
+    hour: '2-digit',
     minute: '2-digit',
-    hour12: true
+    hour12: false
   });
   const dateFormatter = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Phnom_Penh',
@@ -63,6 +63,22 @@ function getLocalDateTime(clientDate, clientTime) {
     date: clientDate || dateFormatter.format(now),
     time: clientTime || timeFormatter.format(now)
   };
+}
+
+// Safely convert any time string (24h or 12h AM/PM) into total minutes from midnight
+function parseTimeToMinutes(timeStr) {
+  if (!timeStr) return null;
+  const str = String(timeStr).trim();
+  const isPM = /pm/i.test(str);
+  const isAM = /am/i.test(str);
+  const cleanStr = str.replace(/[^\d:]/g, '');
+  const parts = cleanStr.split(':').map(Number);
+  if (parts.length < 2 || isNaN(parts[0]) || isNaN(parts[1])) return null;
+  let hours = parts[0];
+  const minutes = parts[1];
+  if (isPM && hours < 12) hours += 12;
+  if (isAM && hours === 12) hours = 0;
+  return hours * 60 + minutes;
 }
 
 // Initialize Local SQLite Tables (Fallback)
@@ -679,11 +695,9 @@ app.post('/api/attendance/check-in', async (req, res) => {
       // Calculate status
       let status = 'PRESENT';
       if (session.start_time) {
-        const [sHour, sMin] = session.start_time.split(':').map(Number);
-        const [cHour, cMin] = currentTime.split(':').map(Number);
-        const sessionMinutes = sHour * 60 + sMin;
-        const currentMinutes = cHour * 60 + cMin;
-        if (currentMinutes > sessionMinutes + 15) {
+        const sessionMinutes = parseTimeToMinutes(session.start_time);
+        const currentMinutes = parseTimeToMinutes(currentTime);
+        if (sessionMinutes !== null && currentMinutes !== null && currentMinutes > sessionMinutes + 15) {
           status = 'LATE';
         }
       }
@@ -763,11 +777,9 @@ app.post('/api/attendance/check-in', async (req, res) => {
 
     let status = 'PRESENT';
     if (session.start_time) {
-      const [sHour, sMin] = session.start_time.split(':').map(Number);
-      const [cHour, cMin] = currentTime.split(':').map(Number);
-      const sessionMinutes = sHour * 60 + sMin;
-      const currentMinutes = cHour * 60 + cMin;
-      if (currentMinutes > sessionMinutes + 15) {
+      const sessionMinutes = parseTimeToMinutes(session.start_time);
+      const currentMinutes = parseTimeToMinutes(currentTime);
+      if (sessionMinutes !== null && currentMinutes !== null && currentMinutes > sessionMinutes + 15) {
         status = 'LATE';
       }
     }
