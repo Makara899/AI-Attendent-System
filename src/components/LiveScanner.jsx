@@ -31,6 +31,7 @@ export default function LiveScanner({
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraLoading, setCameraLoading] = useState(false);
   const [cameraError, setCameraError] = useState(null);
+  const [facingMode, setFacingMode] = useState('user'); // 'user' (Front) | 'environment' (Back)
   
   const [detectedCount, setDetectedCount] = useState(0);
   const [recentCheckIns, setRecentCheckIns] = useState([]);
@@ -41,7 +42,7 @@ export default function LiveScanner({
   const cooldownMap = useRef(new Map());
 
   useEffect(() => {
-    startCamera();
+    startCamera('user');
     return () => {
       stopCamera();
     };
@@ -53,13 +54,21 @@ export default function LiveScanner({
     }
   }, [students, distanceThreshold]);
 
-  const startCamera = async () => {
+  const startCamera = async (mode = facingMode) => {
     soundService.unlockAudio();
     setCameraLoading(true);
     setCameraError(null);
     try {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(t => t.stop());
+        streamRef.current = null;
+      }
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+        video: { 
+          width: { ideal: 640 }, 
+          height: { ideal: 480 }, 
+          facingMode: mode ? { ideal: mode } : 'user' 
+        },
         audio: false
       });
 
@@ -75,10 +84,33 @@ export default function LiveScanner({
       }
     } catch (err) {
       console.error('Camera Access Error:', err);
-      setCameraError(err.message || 'Cannot access webcam.');
-      setCameraLoading(false);
-      setIsCameraActive(false);
+      try {
+        const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        if (videoRef.current) {
+          videoRef.current.srcObject = fallbackStream;
+          streamRef.current = fallbackStream;
+          videoRef.current.onloadedmetadata = () => {
+            videoRef.current.play();
+            setIsCameraActive(true);
+            setCameraLoading(false);
+            startRecognitionLoop();
+          };
+        }
+      } catch (fallbackErr) {
+        setCameraError(err.message || 'Cannot access camera.');
+        setCameraLoading(false);
+        setIsCameraActive(false);
+      }
     }
+  };
+
+  const switchCamera = async () => {
+    const nextMode = facingMode === 'user' ? 'environment' : 'user';
+    setFacingMode(nextMode);
+    stopCamera();
+    setTimeout(() => {
+      startCamera(nextMode);
+    }, 150);
   };
 
   const stopCamera = () => {
@@ -184,7 +216,7 @@ export default function LiveScanner({
       if (response.success) {
         if (soundEnabled) {
           soundService.playSuccessChime();
-          soundService.speakName(matchedStudent.full_name || response.data?.full_name);
+          soundService.speakCheckInSuccess(matchedStudent.full_name || response.data?.full_name, language);
         }
         confetti({ particleCount: 40, spread: 60, origin: { y: 0.6 } });
 
@@ -198,12 +230,12 @@ export default function LiveScanner({
         setRecentCheckIns(prev => [response.data, ...prev.slice(0, 14)]);
       } else if (response.isDuplicate) {
         if (soundEnabled) {
-          soundService.playSuccessChime();
-          soundService.speakName(matchedStudent.full_name);
+          soundService.playWarningSound();
+          soundService.speakAlreadyCheckedIn(matchedStudent.full_name, language);
         }
         setLastCheckInAlert({
           type: 'duplicate',
-          message: response.message || `${matchedStudent.full_name} has already recorded attendance today.`,
+          message: response.message || `${matchedStudent.full_name} is already checked in today.`,
           student: matchedStudent
         });
       }
@@ -285,11 +317,25 @@ export default function LiveScanner({
                 <span>{isKh ? 'បិទកាមេរា' : 'Stop Camera'}</span>
               </button>
             ) : (
-              <button className="btn" onClick={startCamera} disabled={cameraLoading}>
+              <button className="btn" onClick={() => startCamera(facingMode)} disabled={cameraLoading}>
                 <Camera size={16} />
                 <span>{cameraLoading ? (isKh ? 'កំពុងបើក...' : 'Starting...') : (isKh ? 'បើកកាមេរា' : 'Start Camera')}</span>
               </button>
             )}
+
+            <button 
+              className="btn ghost" 
+              onClick={switchCamera} 
+              disabled={cameraLoading}
+              title={isKh ? 'ប្តូរកាមេរា (មុខ / ក្រោយ)' : 'Switch Front/Back Camera'}
+            >
+              <RefreshCw size={16} className={cameraLoading ? 'spinning' : ''} />
+              <span>
+                {isKh 
+                  ? (facingMode === 'user' ? '📷 កាមេរាក្រោយ (Back)' : '🤳 កាមេរាមុខ (Front)') 
+                  : (facingMode === 'user' ? '📷 Back Camera' : '🤳 Front Camera')}
+              </span>
+            </button>
 
             <button className="btn ghost" onClick={onOpenFallback}>
               <ShieldCheck size={16} className="text-warning" />

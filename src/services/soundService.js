@@ -162,8 +162,18 @@ class SoundService {
     return result.trim();
   }
 
-  // Speak student name upon check-in with high clarity
-  speakName(rawName, preferredLang = 'en-US') {
+  // Speaks student name first when attendance is checked in successfully
+  speakCheckInSuccess(rawName, language = 'en') {
+    this.speakCustom(rawName, 'success', language);
+  }
+
+  // Speaks student name first when already checked in: e.g. "Sambath Makara is already checked in"
+  speakAlreadyCheckedIn(rawName, language = 'en') {
+    this.speakCustom(rawName, 'duplicate', language);
+  }
+
+  // Speak custom structured message (Takes Student Name First!)
+  speakCustom(rawName, type = 'success', language = 'en') {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     try {
       window.speechSynthesis.cancel(); // Stop prior speech
@@ -176,32 +186,45 @@ class SoundService {
       const voices = window.speechSynthesis.getVoices() || [];
       const khmerVoice = voices.find(v => v.lang.startsWith('km') || v.lang.includes('Khmer'));
 
-      // Check if rawName contains Latin letters (e.g. "Chan Dara (ចាន់ ដារ៉ា)" or "ចាន់ ដារ៉ា (Chan Dara)")
+      // Check if rawName contains Latin letters
       const latinSegments = (rawName.match(/[a-zA-Z\s]{2,}/g) || [])
         .map(s => s.trim())
         .filter(s => s.length >= 2);
 
-      let spokenText = '';
-      let selectedVoice = null;
+      let spokenName = '';
       let targetLang = 'en-US';
+      let selectedVoice = null;
 
       if (latinSegments.length > 0) {
-        // Sort by length to pick the most complete English name
-        const bestLatinName = latinSegments.sort((a, b) => b.length - a.length)[0];
-        spokenText = `Welcome, ${bestLatinName}`;
+        // Sort by length to pick the full English name
+        spokenName = latinSegments.sort((a, b) => b.length - a.length)[0];
       } else if (khmerVoice) {
-        // Use native Khmer voice if installed on system
-        spokenText = `សូមស្វាគមន៍ ${rawName}`;
+        spokenName = rawName;
         selectedVoice = khmerVoice;
         targetLang = khmerVoice.lang;
       } else {
-        // Transliterate Khmer name to natural Latin phonetics so English voice speaks it smoothly
-        const phoneticName = this.transliterateKhmer(rawName);
-        spokenText = phoneticName ? `Welcome, ${phoneticName}` : 'Welcome, Attendance Recorded';
+        spokenName = this.transliterateKhmer(rawName) || 'Student';
       }
 
-      const utterance = new SpeechSynthesisUtterance(spokenText);
-      utterance.rate = 0.90;
+      let sentence = '';
+      if (type === 'duplicate') {
+        if (selectedVoice && targetLang.startsWith('km')) {
+          sentence = `${spokenName} បានចុះវត្តមានរួចរាល់ហើយ`;
+        } else {
+          // Format: "Sambath Makara is already checked in"
+          sentence = `${spokenName} is already checked in`;
+        }
+      } else {
+        if (selectedVoice && targetLang.startsWith('km')) {
+          sentence = `${spokenName} បានកត់ត្រាវត្តមានជោគជ័យ`;
+        } else {
+          // Format: "Sambath Makara, checked in successfully"
+          sentence = `${spokenName}, checked in successfully`;
+        }
+      }
+
+      const utterance = new SpeechSynthesisUtterance(sentence);
+      utterance.rate = 0.88;
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
       utterance.lang = targetLang;
@@ -209,7 +232,6 @@ class SoundService {
       if (selectedVoice) {
         utterance.voice = selectedVoice;
       } else if (voices.length > 0) {
-        // Natural English voice
         const preferredVoice = voices.find(v => 
           v.lang.startsWith('en') && 
           (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Microsoft') || v.name.includes('Samantha') || v.name.includes('Jenny') || v.name.includes('Guy'))
@@ -222,6 +244,11 @@ class SoundService {
     } catch (e) {
       console.warn('TTS Error:', e);
     }
+  }
+
+  // Legacy fallback
+  speakName(rawName) {
+    this.speakCheckInSuccess(rawName);
   }
 }
 
