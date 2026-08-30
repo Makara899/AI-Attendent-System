@@ -398,7 +398,7 @@ export default function LiveScanner({
           ) : (
             recentCheckIns.map((rec, i) => (
               <div key={rec.id || i} className="l">
-                [{rec.check_in_time || '00:00'}] <span className="name">{rec.full_name || rec.student_code}</span> ({rec.student_code || rec.student_id}) — <span className="pill present">{rec.status || 'PRESENT'}</span> via <span className="method">{rec.check_in_method || 'AI_FACE'}</span>
+                [{formatDisplayTime(rec.check_in_time, rec.created_at)}] <span className="name">{rec.full_name || rec.student_code}</span> ({rec.student_code || rec.student_id}) — <span className="pill present">{rec.status || 'PRESENT'}</span> via <span className="method">{rec.check_in_method || 'AI_FACE'}</span>
               </div>
             ))
           )}

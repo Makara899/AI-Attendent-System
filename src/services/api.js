@@ -36,6 +36,9 @@ export const formatDisplayTime = (timeStr, createdAt) => {
   }
 
   if (timeStr && timeStr !== '-') {
+    if (timeStr.includes('AM') || timeStr.includes('PM')) {
+      return timeStr;
+    }
     const parts = timeStr.split(':');
     if (parts.length >= 2) {
       let h = parseInt(parts[0], 10);
@@ -145,7 +148,12 @@ export const api = {
   // Attendance
   checkIn: async ({ student_id, session_id, confidence_score, snapshot_base64, notes, check_in_time, date }) => {
     const now = new Date();
-    const localTime = check_in_time || `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const localTime = check_in_time || now.toLocaleTimeString('en-US', {
+      timeZone: 'Asia/Phnom_Penh',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
     const localDate = date || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
     const res = await fetch(`${API_BASE}/attendance/check-in`, {
@@ -166,7 +174,12 @@ export const api = {
 
   manualOverride: async ({ student_id, session_id, status, reason, notes, teacher_name, check_in_time, date }) => {
     const now = new Date();
-    const localTime = check_in_time || `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const localTime = check_in_time || now.toLocaleTimeString('en-US', {
+      timeZone: 'Asia/Phnom_Penh',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
     const localDate = date || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
     const res = await fetch(`${API_BASE}/attendance/manual-override`, {

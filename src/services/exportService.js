@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx';
+import { formatDisplayTime } from './api';
 
 export const exportService = {
   // Export to Excel (.xlsx)
@@ -12,7 +13,7 @@ export const exportService = {
         'Gender': r.gender || 'N/A',
         'Class': r.class_name,
         'Date': r.date,
-        'Check-In Time': r.check_in_time || '-',
+        'Check-In Time': formatDisplayTime(r.check_in_time, r.created_at),
         'Status': r.status,
         'Check-In Method': r.check_in_method === 'AI_FACE' ? 'AI Camera' : (r.check_in_method === 'MANUAL_OVERRIDE' ? 'Manual Override' : 'System'),
         'Confidence': r.confidence_score ? `${Math.round(r.confidence_score * 100)}%` : '100%',
@@ -60,7 +61,7 @@ export const exportService = {
         `"${r.gender || 'N/A'}"`,
         `"${r.class_name}"`,
         `"${r.date}"`,
-        `"${r.check_in_time || '-'}"`,
+        `"${formatDisplayTime(r.check_in_time, r.created_at)}"`,
         `"${r.status}"`,
         `"${r.check_in_method || 'AI_FACE'}"`,
         `"${r.confidence_score ? Math.round(r.confidence_score * 100) + '%' : '-'}"`,

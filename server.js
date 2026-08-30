@@ -40,17 +40,17 @@ const upload = multer({ storage, limits: { fileSize: 25 * 1024 * 1024 } });
 const dbPath = path.join(__dirname, 'attendance.db');
 const db = new DatabaseSync(dbPath);
 
-// Timezone helper for Asia/Phnom_Penh (UTC+7)
+// Timezone helper for Asia/Phnom_Penh (UTC+7) in 12-hour AM/PM format
 function getLocalDateTime(clientDate, clientTime) {
   if (clientDate && clientTime) {
     return { date: clientDate, time: clientTime };
   }
   const now = new Date();
-  const timeFormatter = new Intl.DateTimeFormat('en-GB', {
+  const timeFormatter = new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Phnom_Penh',
-    hour: '2-digit',
+    hour: 'numeric',
     minute: '2-digit',
-    hour12: false
+    hour12: true
   });
   const dateFormatter = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Phnom_Penh',
