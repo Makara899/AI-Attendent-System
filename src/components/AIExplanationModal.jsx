@@ -59,8 +59,8 @@ export default function AIExplanationModal({ isOpen, onClose, language }) {
             </div>
             <p className="layer-desc">
               {isKh 
-                ? 'នៅពេល AI មិនស្គាល់មុខ ឬមានកម្រិតភាពជឿជាក់ទាប (Low Confidence Score) សាស្ត្រាចារ្យអាចប្រើប្រព័ន្ធ Manual Fallback ដើម្បីកត់ត្រាវត្តមានភ្លាមៗ ដោយជ្រើសរើសឈ្មោះ និងមូលហេតុ (ឧទាហរណ៍៖ ពន្លឺងងឹត, ពាក់ម៉ាស់, ពាក់វ៉ែនតា)។ ប្រព័ន្ធនឹងរក្សាទុកក្នុង SQLite ដោយកត់សម្គាល់ method ជា MANUAL_OVERRIDE និងកត់ត្រា audit log ដោយស្វ័យប្រវត្តិ។' 
-                : 'When AI fails to match or confidence is below threshold, teachers can use the one-click Manual Fallback modal to record attendance directly with a specific logged reason (e.g. lighting, face mask, glasses). The system tags this as MANUAL_OVERRIDE in SQLite and logs the teacher verification audit trail.'}
+                ? 'នៅពេល AI មិនស្គាល់មុខ ឬមានកម្រិតភាពជឿជាក់ទាប (Low Confidence Score) សាស្ត្រាចារ្យអាចប្រើប្រព័ន្ធ Manual Fallback ដើម្បីកត់ត្រាវត្តមានភ្លាមៗ ដោយជ្រើសរើសឈ្មោះ និងមូលហេតុ (ឧទាហរណ៍៖ ពន្លឺងងឹត, ពាក់ម៉ាស់, ពាក់វ៉ែនតា)។ ប្រព័ន្ធនឹងរក្សាទុកក្នុង PostgreSQL ដោយកត់សម្គាល់ method ជា MANUAL_OVERRIDE និងកត់ត្រា audit log ដោយស្វ័យប្រវត្តិ។' 
+                : 'When AI fails to match or confidence is below threshold, teachers can use the one-click Manual Fallback modal to record attendance directly with a specific logged reason (e.g. lighting, face mask, glasses). The system tags this as MANUAL_OVERRIDE in PostgreSQL and logs the teacher verification audit trail.'}
             </p>
           </div>
 
@@ -95,8 +95,8 @@ export default function AIExplanationModal({ isOpen, onClose, language }) {
             </div>
             <p className="layer-desc">
               {isKh 
-                ? 'ប្រសិនបើនិស្សិតផ្លាស់ប្តូរម៉ូតសក់ ដុះពុកចង្កា ឬពាក់វ៉ែនតាថ្មី ប្រព័ន្ធអនុញ្ញាតឱ្យចូលទៅកាន់ទំព័រ "Register Face" ដើម្បីថតរូបភាពមុខថ្មី និងទាញយក Biometric Vector ថ្មីមកជំនួស ឬបន្ថែមក្នុង SQLite `students.face_descriptor`។' 
-                : 'If a student significantly changes appearance (hair style, facial hair, new prescription glasses), the system allows quick profile re-enrollment to update the stored 128-dimensional embedding in SQLite.'}
+                ? 'ប្រសិនបើនិស្សិតផ្លាស់ប្តូរម៉ូតសក់ ដុះពុកចង្កា ឬពាក់វ៉ែនតាថ្មី ប្រព័ន្ធអនុញ្ញាតឱ្យចូលទៅកាន់ទំព័រ "Register Face" ដើម្បីថតរូបភាពមុខថ្មី និងទាញយក Biometric Vector ថ្មីមកជំនួស ឬបន្ថែមក្នុង PostgreSQL `students.face_descriptor`។' 
+                : 'If a student significantly changes appearance (hair style, facial hair, new prescription glasses), the system allows quick profile re-enrollment to update the stored 128-dimensional embedding in PostgreSQL.'}
             </p>
           </div>
 
@@ -107,14 +107,14 @@ export default function AIExplanationModal({ isOpen, onClose, language }) {
               <div className="layer-title">
                 <Database size={20} className="text-info" />
                 <h4>
-                  {isKh ? '៤. ការពារការចុះស្ទួន & សុចរិតភាពទិន្នន័យ (Anti-Duplicate & SQLite Integrity)' : '4. Anti-Duplicate Protection & SQLite Integrity'}
+                  {isKh ? '៤. ការពារការចុះស្ទួន & សុចរិតភាពទិន្នន័យ (Anti-Duplicate & PostgreSQL Integrity)' : '4. Anti-Duplicate Protection & PostgreSQL Integrity'}
                 </h4>
               </div>
             </div>
             <p className="layer-desc">
               {isKh 
-                ? 'ប្រព័ន្ធមានលក្ខខណ្ឌការពារស្ទួនទាំងនៅ Client (Cooldown Map 30s) និងនៅ SQLite Backend (Unique check លើ student_id + session_id + date) ព្រមទាំងផ្តល់សំឡេង Warning បញ្ជាក់ច្បាស់លាស់នៅពេលនិស្សិតបានចុះវត្តមានរួចហើយ។' 
-                : 'Dual-layer anti-duplicate check prevents accidental duplicate submissions via a 30-second client cooldown and strict SQLite session/date unique checks, accompanied by audible sound warnings.'}
+                ? 'ប្រព័ន្ធមានលក្ខខណ្ឌការពារស្ទួនទាំងនៅ Client (Cooldown Map) និងនៅ PostgreSQL Backend (Unique check លើ student_id + session_id + date) ព្រមទាំងផ្តល់សំឡេង Warning បញ្ជាក់ច្បាស់លាស់នៅពេលនិស្សិតបានចុះវត្តមានរួចហើយ។' 
+                : 'Dual-layer anti-duplicate check prevents accidental duplicate submissions via a client cooldown and strict PostgreSQL session/date unique checks, accompanied by audible sound warnings.'}
             </p>
           </div>
         </div>

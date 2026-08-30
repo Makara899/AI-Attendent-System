@@ -260,8 +260,8 @@ export default function StudentRegistration({
         <h2>{isKh ? 'ចុះឈ្មោះនិស្សិតថ្មី (Student Registration)' : 'Register New Student'}</h2>
         <p className="hint">
           {isKh 
-            ? 'បំពេញព័ត៌មាន ហើយថតរូបមុខមួយសន្លឹកឱ្យច្បាស់។ រូបថត និង 128-D Biometric Vector នឹងត្រូវបានរក្សាទុកក្នុង SQLite Database។' 
-            : 'Fill in student details and capture a clear face photo. Biometrics are saved to SQLite DB.'}
+            ? 'បំពេញព័ត៌មាន ហើយថតរូបមុខមួយសន្លឹកឱ្យច្បាស់។ រូបថត និង 128-D Biometric Vector នឹងត្រូវបានរក្សាទុកក្នុង PostgreSQL Database (Supabase)។' 
+            : 'Fill in student details and capture a clear face photo. Biometrics are saved to PostgreSQL DB (Supabase).'}
         </p>
 
         <div className="row">
