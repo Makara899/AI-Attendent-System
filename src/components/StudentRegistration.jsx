@@ -5,7 +5,13 @@ import {
   Upload, 
   Trash2,
   CheckCircle2,
-  Loader2
+  Loader2,
+  RefreshCw,
+  Sparkles,
+  User,
+  Hash,
+  BookOpen,
+  Users
 } from 'lucide-react';
 import { faceService } from '../services/faceService';
 import { api, getMediaUrl } from '../services/api';
@@ -36,6 +42,7 @@ export default function StudentRegistration({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formFeedback, setFormFeedback] = useState(null);
   const [registeredStudents, setRegisteredStudents] = useState([]);
+  const [facingMode, setFacingMode] = useState('user'); // 'user' (Front) | 'environment' (Back)
 
   // Webcam references
   const videoRef = useRef(null);
@@ -45,7 +52,7 @@ export default function StudentRegistration({
 
   useEffect(() => {
     fetchRegisteredList();
-    startCamera();
+    startCamera('user');
     return () => {
       stopCamera();
     };
@@ -62,20 +69,24 @@ export default function StudentRegistration({
     }
   };
 
-  const startCamera = async () => {
+  const startCamera = async (mode = facingMode) => {
     try {
       setCapturedImage(null);
 
       const getStream = async () => {
         try {
           return await navigator.mediaDevices.getUserMedia({
-            video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+            video: { 
+              width: { ideal: 640 }, 
+              height: { ideal: 480 }, 
+              facingMode: mode ? { ideal: mode } : 'user' 
+            },
             audio: false
           });
         } catch (e1) {
           try {
             return await navigator.mediaDevices.getUserMedia({
-              video: { facingMode: 'user' },
+              video: { facingMode: mode ? mode : 'user' },
               audio: false
             });
           } catch (e2) {
@@ -86,6 +97,11 @@ export default function StudentRegistration({
           }
         }
       };
+
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(t => t.stop());
+        streamRef.current = null;
+      }
 
       const stream = await getStream();
       streamRef.current = stream;
@@ -126,6 +142,12 @@ export default function StudentRegistration({
     setCameraActive(false);
   };
 
+  const switchCamera = async () => {
+    const nextMode = facingMode === 'user' ? 'environment' : 'user';
+    setFacingMode(nextMode);
+    await startCamera(nextMode);
+  };
+
   const handleSnapWebcam = async () => {
     if (!videoRef.current || !canvasRef.current) return;
 
@@ -139,15 +161,42 @@ export default function StudentRegistration({
 
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
     setCapturedImage(dataUrl);
 
-    await processFaceImage(dataUrl);
-    setIsProcessingFace(false);
+    try {
+      const img = new Image();
+      img.src = dataUrl;
+      await new Promise((resolve) => { img.onload = resolve; });
+
+      const detection = await faceService.detectSingleFace(img);
+      if (detection && detection.descriptor) {
+        setFaceDescriptor(Array.from(detection.descriptor));
+        setFaceQualityStatus({
+          valid: true,
+          message: isKh ? '✔ AI បានស្រង់ទិន្នន័យផ្ទៃមុខ Biometric Vector (128-D) ត្រឹមត្រូវ!' : '✔ High-quality Face Biometric Vector (128-D) extracted!'
+        });
+      } else {
+        setFaceDescriptor(null);
+        setFaceQualityStatus({
+          valid: false,
+          message: isKh ? '✖ មិនអាចចាប់បានផ្ទៃមុខច្បាស់ទេ។ សូមសាកល្បងថតម្តងទៀត។' : '✖ No clear face detected. Please retake photo.'
+        });
+      }
+    } catch (err) {
+      console.error('Face detection error on snap:', err);
+      setFaceDescriptor(null);
+      setFaceQualityStatus({
+        valid: false,
+        message: isKh ? 'កំហុសក្នុងការវិភាគមុខ' : 'Error analyzing face biometrics.'
+      });
+    } finally {
+      setIsProcessingFace(false);
+    }
   };
 
   const handleFileUpload = async (e) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files[0];
     if (!file) return;
 
     setIsProcessingFace(true);
@@ -157,93 +206,93 @@ export default function StudentRegistration({
     reader.onload = async (event) => {
       const dataUrl = event.target.result;
       setCapturedImage(dataUrl);
-      await processFaceImage(dataUrl);
-      setIsProcessingFace(false);
+
+      try {
+        const img = new Image();
+        img.src = dataUrl;
+        await new Promise((resolve) => { img.onload = resolve; });
+
+        const detection = await faceService.detectSingleFace(img);
+        if (detection && detection.descriptor) {
+          setFaceDescriptor(Array.from(detection.descriptor));
+          setFaceQualityStatus({
+            valid: true,
+            message: isKh ? '✔ AI បានស្រង់ទិន្នន័យផ្ទៃមុខ Biometric Vector (128-D) ត្រឹមត្រូវ!' : '✔ Biometric vector extracted successfully!'
+          });
+        } else {
+          setFaceDescriptor(null);
+          setFaceQualityStatus({
+            valid: false,
+            message: isKh ? '✖ មិនអាចរកឃើញផ្ទៃមុខច្បាស់លាស់ក្នុងរូបភាពនេះទេ។' : '✖ No face detected in uploaded image.'
+          });
+        }
+      } catch (err) {
+        console.error('File face detection error:', err);
+        setFaceDescriptor(null);
+        setFaceQualityStatus({
+          valid: false,
+          message: isKh ? 'កំហុសក្នុងការវិភាគរូបភាព' : 'Error detecting face from file.'
+        });
+      } finally {
+        setIsProcessingFace(false);
+      }
     };
     reader.readAsDataURL(file);
   };
 
-  const processFaceImage = async (imageSrc) => {
-    try {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.src = imageSrc;
-      await new Promise((resolve, reject) => { 
-        img.onload = resolve; 
-        img.onerror = reject;
-      });
-
-      const result = await faceService.extractFaceDescriptor(img);
-
-      if (result && result.success && result.descriptor) {
-        setFaceDescriptor(result.descriptor);
-        setFaceQualityStatus({
-          valid: true,
-          message: isKh 
-            ? '✔ រកឃើញមុខនិស្សិតច្បាស់លាស់ (128-D Biometric Vector ស្គាល់ ១០០%)' 
-            : '✔ Clear face detected (128-D biometric descriptor extracted)'
-        });
-      } else {
-        setFaceDescriptor(null);
-        setFaceQualityStatus({
-          valid: false,
-          message: isKh
-            ? `❌ ${result?.error || 'AI មិនអាចសម្គាល់មុខបានច្បាស់ទេ'} — សូមថតសារជាថ្មី`
-            : `❌ ${result?.error || 'No face detected in photo'} — Please try again with clear lighting.`
-        });
-      }
-    } catch (err) {
-      setFaceDescriptor(null);
-      setFaceQualityStatus({
-        valid: false,
-        message: err.message || 'Face analysis failed.'
-      });
-    }
+  const handleRetakePhoto = () => {
+    setCapturedImage(null);
+    setFaceDescriptor(null);
+    setFaceQualityStatus(null);
+    startCamera(facingMode);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormFeedback(null);
 
     if (!studentId.trim() || !fullName.trim()) {
       setFormFeedback({
         type: 'error',
-        message: isKh ? 'សូមបំពេញព័ត៌មានចាំបាច់ (អត្តលេខ, ឈ្មោះ)' : 'Please fill all required fields.'
+        message: isKh ? 'សូមបំពេញអត្តលេខ និងឈ្មោះនិស្សិត' : 'Student ID and Full Name are required.'
       });
       return;
     }
 
-    if (!faceDescriptor && !capturedImage) {
+    if (!capturedImage) {
       setFormFeedback({
         type: 'error',
-        message: isKh ? 'សូមថតរូបមុខនិស្សិត ឬ Upload រូបថតជាមុនសិន' : 'Please capture face photo first.'
+        message: isKh ? 'សូមថតរូបផ្ទៃមុខ ឬ Upload រូបថតជាមុនសិន' : 'Please capture or upload a face photo.'
       });
       return;
     }
 
     setIsSubmitting(true);
-    setFormFeedback(null);
-
     try {
-      const payload = {
-        student_id: studentId.trim(),
-        full_name: fullName.trim(),
-        gender,
-        major: currentMajor,
-        class_name: currentClass,
-        email: email.trim() || null,
-        phone: phone.trim() || null,
-        photo_base64: capturedImage,
-        face_descriptor: faceDescriptor
-      };
+      const formData = new FormData();
+      formData.append('student_id', studentId.trim());
+      formData.append('full_name', fullName.trim());
+      formData.append('gender', gender);
+      formData.append('major', currentMajor);
+      formData.append('class_name', currentClass);
+      formData.append('email', email.trim());
+      formData.append('phone', phone.trim());
 
-      const res = await api.createStudent(payload);
+      if (faceDescriptor) {
+        formData.append('face_descriptor', JSON.stringify(faceDescriptor));
+      }
 
+      if (capturedImage && capturedImage.startsWith('data:image')) {
+        const fetchRes = await fetch(capturedImage);
+        const blob = await fetchRes.blob();
+        formData.append('photo', blob, `${studentId.trim()}_face.jpg`);
+      }
+
+      const res = await api.createStudent(formData);
       if (res.success) {
         setFormFeedback({
           type: 'success',
-          message: isKh 
-            ? `✔ បានចុះឈ្មោះនិស្សិត "${fullName}" ចូលក្នុងថ្នាក់ ${currentClass} ដោយជោគជ័យ!`
-            : `✔ Successfully registered "${fullName}" to ${currentClass}!`
+          message: isKh ? `✔ បានចុះឈ្មោះនិស្សិត "${fullName}" ដោយជោគជ័យ!` : `✔ Student "${fullName}" registered successfully!`
         });
 
         // Reset form
@@ -252,19 +301,18 @@ export default function StudentRegistration({
         setCapturedImage(null);
         setFaceDescriptor(null);
         setFaceQualityStatus(null);
-
         fetchRegisteredList();
         if (onStudentAdded) onStudentAdded();
       } else {
         setFormFeedback({
           type: 'error',
-          message: res.error || 'Registration failed.'
+          message: res.error || (isKh ? 'កំហុសក្នុងការចុះឈ្មោះ' : 'Registration failed.')
         });
       }
     } catch (err) {
       setFormFeedback({
         type: 'error',
-        message: err.message || 'Network error occurred.'
+        message: err.message || (isKh ? 'កំហុស Server' : 'Server error occurred.')
       });
     } finally {
       setIsSubmitting(false);
@@ -272,122 +320,56 @@ export default function StudentRegistration({
   };
 
   const handleDeleteStudent = async (id) => {
-    if (!window.confirm(isKh ? 'តើអ្នកប្រាកដជាចង់លុបនិស្សិតនេះ?' : 'Delete this student?')) return;
+    if (!window.confirm(isKh ? 'តើអ្នកប្រាកដជាចង់លុបនិស្សិតនេះចេញពីប្រព័ន្ធ?' : 'Delete this student?')) return;
     try {
-      await api.deleteStudent(id);
-      fetchRegisteredList();
-      if (onStudentAdded) onStudentAdded();
+      const res = await api.deleteStudent(id);
+      if (res.success) {
+        fetchRegisteredList();
+        if (onStudentAdded) onStudentAdded();
+      }
     } catch (e) {
       console.error(e);
     }
   };
 
-  // Sort registered students A-Z
   const sortedStudents = [...registeredStudents].sort((a, b) => 
-    a.full_name.localeCompare(b.full_name)
+    (a.full_name || '').localeCompare(b.full_name || '')
   );
 
   return (
-    <div className="tab-pane">
-      {/* Panel 1: Registration Form & Viewfinder */}
+    <div className="tab-pane fade-in-fast">
+      {/* Panel 1: Registration Card */}
       <div className="panel">
-        <h2>{isKh ? 'ចុះឈ្មោះនិស្សិតថ្មី (Student Registration)' : 'Register New Student'}</h2>
-        <p className="hint">
-          {isKh 
-            ? 'បំពេញព័ត៌មាន ហើយថតរូបមុខមួយសន្លឹកឱ្យច្បាស់។ រូបថត និង 128-D Biometric Vector នឹងត្រូវបានរក្សាទុកក្នុង PostgreSQL Database (Supabase)។' 
-            : 'Fill in student details and capture a clear face photo. Biometrics are saved to PostgreSQL DB (Supabase).'}
-        </p>
+        <div className="flex-between" style={{ flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
+          <div>
+            <h2>{isKh ? 'ចុះឈ្មោះនិស្សិត និង Biometric ផ្ទៃមុខ' : 'Student Enrollment & Face Biometrics'}</h2>
+            <p className="hint" style={{ margin: 0 }}>
+              {isKh ? 'ថតរូបផ្ទៃមុខដើម្បីឱ្យ AI ទាញយក Face Descriptor 128-D សម្រាប់ស្កេនវត្តមាន' : 'Capture photo to extract 128-D face biometric vector for instant attendance'}
+            </p>
+          </div>
+          <div className="hero-chip" style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.35)', color: 'var(--accent)' }}>
+            👥 <strong>{currentClass}</strong> · {currentMajor}
+          </div>
+        </div>
 
         <div className="row">
-          {/* Left Column: Form Fields */}
+          {/* Column 1: Camera Viewfinder & Snap Actions */}
           <div className="col">
-            <form onSubmit={handleSubmit}>
-              <div className="field">
-                <label>{isKh ? 'លេខសម្គាល់និស្សិត (Student ID)' : 'Student ID'}</label>
-                <input
-                  type="text"
-                  placeholder="e.g. STU-001"
-                  value={studentId}
-                  onChange={(e) => setStudentId(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="field">
-                <label>{isKh ? 'ឈ្មោះពេញ (Full Name)' : 'Full Name'}</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Chan Dara (ចាន់ ដារ៉ា)"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="row">
-                {/* Fixed Major from Active Session */}
-                <div className="col">
-                  <div className="field">
-                    <label>{isKh ? 'ជំនាញ (Major)' : 'Major'}</label>
-                    <input
-                      type="text"
-                      value={currentMajor}
-                      readOnly
-                      style={{ background: 'var(--panel-2)', cursor: 'not-allowed', color: 'var(--text)' }}
-                    />
-                  </div>
-                </div>
-
-                <div className="col">
-                  <div className="field">
-                    <label>{isKh ? 'ភេទ (Gender)' : 'Gender'}</label>
-                    <select value={gender} onChange={(e) => setGender(e.target.value)}>
-                      <option value="Male">{isKh ? 'ប្រុស' : 'Male'}</option>
-                      <option value="Female">{isKh ? 'ស្រី' : 'Female'}</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Fixed Class & Batch from Active Session */}
-              <div className="field">
-                <label>{isKh ? 'ថ្នាក់ & ជំនាន់ (Class & Batch)' : 'Class & Batch'}</label>
-                <input
-                  type="text"
-                  value={currentClass}
-                  readOnly
-                  style={{ background: 'var(--panel-2)', cursor: 'not-allowed', color: 'var(--accent)', fontWeight: '600' }}
-                />
-              </div>
-
-              {formFeedback && (
-                <div className={`msg ${formFeedback.type === 'success' ? 'ok' : 'fail'}`}>
-                  {formFeedback.message}
-                </div>
+            <div className={`cam-frame ${cameraActive && !capturedImage ? 'scanning' : ''}`} style={{ height: '280px', borderRadius: '16px', overflow: 'hidden', position: 'relative' }}>
+              
+              {/* Floating Camera Flip Button */}
+              {cameraActive && !capturedImage && (
+                <button 
+                  className="floating-cam-btn" 
+                  onClick={switchCamera}
+                  title={isKh ? 'ប្តូរកាមេរា (មុខ / ក្រោយ)' : 'Switch Camera'}
+                  type="button"
+                >
+                  <RefreshCw size={16} />
+                </button>
               )}
 
-              <button
-                type="submit"
-                className="btn"
-                disabled={isSubmitting || isProcessingFace}
-                style={{ width: '100%', marginTop: '12px' }}
-              >
-                {isSubmitting && <Loader2 size={16} className="spin-icon" style={{ marginRight: 6 }} />}
-                <span>{isSubmitting ? (isKh ? 'កំពុងរក្សាទុក...' : 'Saving...') : (isKh ? 'រក្សាទុកទិន្នន័យនិស្សិត' : 'Register Student')}</span>
-              </button>
-            </form>
-          </div>
-
-          {/* Right Column: Camera Viewfinder & Preview */}
-          <div className="col">
-            <div className={`cam-frame ${cameraActive ? 'scanning' : ''}`}>
-              <span className="bracket b-tl"></span>
-              <span className="bracket b-tr"></span>
-              <span className="bracket b-bl"></span>
-              <span className="bracket b-br"></span>
-
-              {/* Camera Video - Always mounted in DOM */}
+              {/* Camera Video */}
               <video
                 ref={videoRef}
                 autoPlay
@@ -411,18 +393,25 @@ export default function StudentRegistration({
                 />
               )}
 
+              {/* Live Oval Face Guide */}
+              {cameraActive && !capturedImage && !isProcessingFace && (
+                <div className="face-guide-oval">
+                  <span className="guide-text">{isKh ? 'ដាក់មុខក្នុងរង្វង់នេះ' : 'Align face in oval'}</span>
+                </div>
+              )}
+
               {/* AI Processing Face Overlay */}
               {isProcessingFace && (
                 <div className="cam-loading-overlay">
                   <div className="cam-radar-spinner"></div>
                   <div className="cam-loading-text">
                     <span className="dot"></span>
-                    <span>{isKh ? 'AI កំពុងទាញយក Face Descriptors (128-D)...' : 'AI Extracting 128D Face Descriptors...'}</span>
+                    <span>{isKh ? 'AI កំពុងទាញយក Face Descriptors (128-D)...' : 'Extracting 128-D Biometrics...'}</span>
                   </div>
                 </div>
               )}
 
-              {/* Camera Off Placeholder when stopped */}
+              {/* Camera Off Placeholder */}
               {!cameraActive && !capturedImage && !isProcessingFace && (
                 <div style={{
                   height: '100%',
@@ -434,72 +423,56 @@ export default function StudentRegistration({
                   color: 'var(--text-dim)',
                   gap: '8px'
                 }}>
-                  <CameraOff size={40} style={{ opacity: 0.5 }} />
-                  <span style={{ fontSize: '13px', letterSpacing: '0.05em' }}>
-                    {isKh ? 'កាមេរាត្រូវបានបិទ (CAMERA OFF)' : 'CAMERA OFF'}
-                  </span>
+                  <CameraOff size={36} style={{ opacity: 0.5 }} />
+                  <span style={{ fontSize: '13px' }}>{isKh ? 'កាមេរាបិទ' : 'Camera Off'}</span>
                 </div>
               )}
 
               <canvas ref={canvasRef} style={{ display: 'none' }} />
 
               <div className="cam-status">
-                {cameraActive ? (isKh ? 'កាមេរាកំពុងដំណើរការ' : 'LIVE CAMERA') : (isKh ? 'កាមេរាបិទ' : 'CAMERA OFF')}
+                {capturedImage ? 'PHOTO READY' : (cameraActive ? 'LIVE CAMERA' : 'CAMERA OFF')}
               </div>
             </div>
 
             {/* Quality Status Feedback */}
             {faceQualityStatus && (
-              <div className={`msg ${faceQualityStatus.valid ? 'ok' : 'fail'}`} style={{ marginTop: '8px' }}>
+              <div className={`msg ${faceQualityStatus.valid ? 'ok' : 'fail'}`} style={{ marginTop: '10px' }}>
                 {faceQualityStatus.message}
               </div>
             )}
 
-            {/* Camera Control Buttons: 3 equal width buttons with red Stop Cam button */}
-            <div style={{ display: 'flex', gap: '8px', width: '100%', marginTop: '12px' }}>
-              {cameraActive ? (
+            {/* Camera Control Action Buttons */}
+            <div style={{ display: 'flex', gap: '8px', width: '100%', marginTop: '12px', alignItems: 'center' }}>
+              {capturedImage ? (
                 <button
                   type="button"
-                  className="btn danger"
+                  className="btn ghost"
                   style={{ flex: 1 }}
-                  onClick={stopCamera}
+                  onClick={handleRetakePhoto}
                 >
-                  <CameraOff size={15} />
-                  <span>{isKh ? 'បិទកាមេរា' : 'Stop Cam'}</span>
+                  <RefreshCw size={15} />
+                  <span>{isKh ? 'ថតឡើងវិញ (Retake)' : 'Retake Photo'}</span>
                 </button>
               ) : (
                 <button
                   type="button"
-                  className="btn"
-                  style={{ flex: 1 }}
-                  onClick={startCamera}
+                  className="btn btn-primary"
+                  style={{ flex: 1.5, background: 'var(--accent-gradient)', color: '#FFFFFF' }}
+                  onClick={handleSnapWebcam}
+                  disabled={!cameraActive || isProcessingFace}
                 >
-                  <Camera size={15} />
-                  <span>{isKh ? 'បើកកាមេរា' : 'Start Cam'}</span>
+                  <Camera size={18} />
+                  <span>{isProcessingFace ? (isKh ? 'កំពុងស្កេន...' : 'Processing...') : (isKh ? 'ថតរូបមុខ (Snap)' : 'Capture Photo')}</span>
                 </button>
               )}
-
-              <button
-                type="button"
-                className="btn"
-                style={{ flex: 1 }}
-                onClick={handleSnapWebcam}
-                disabled={!cameraActive || isProcessingFace}
-              >
-                <Camera size={15} />
-                <span>
-                  {isProcessingFace 
-                    ? (isKh ? 'កំពុងស្កេន...' : 'Processing...') 
-                    : (isKh ? 'ថតរូបមុខ' : 'Capture Photo')}
-                </span>
-              </button>
 
               <label 
                 className="btn ghost" 
                 style={{ flex: 1, cursor: 'pointer', margin: 0, textAlign: 'center', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
               >
                 <Upload size={15} />
-                <span>{isKh ? 'Upload រូបថត' : 'Upload File'}</span>
+                <span>{isKh ? 'Upload' : 'Upload'}</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -509,13 +482,98 @@ export default function StudentRegistration({
               </label>
             </div>
           </div>
+
+          {/* Column 2: Form Fields */}
+          <div className="col">
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div className="field" style={{ margin: 0 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <Hash size={14} className="text-primary" />
+                  {isKh ? 'លេខសម្គាល់និស្សិត (Student ID)' : 'Student ID'}
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. STU-001"
+                  value={studentId}
+                  onChange={(e) => setStudentId(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="field" style={{ margin: 0 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <User size={14} className="text-primary" />
+                  {isKh ? 'ឈ្មោះពេញ (Full Name)' : 'Full Name'}
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Chan Dara (ចាន់ ដារ៉ា)"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="row" style={{ gap: '10px' }}>
+                <div className="col" style={{ minWidth: 0 }}>
+                  <div className="field" style={{ margin: 0 }}>
+                    <label>{isKh ? 'ភេទ (Gender)' : 'Gender'}</label>
+                    <select value={gender} onChange={(e) => setGender(e.target.value)}>
+                      <option value="Male">{isKh ? 'ប្រុស (Male)' : 'Male'}</option>
+                      <option value="Female">{isKh ? 'ស្រី (Female)' : 'Female'}</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="col" style={{ minWidth: 0 }}>
+                  <div className="field" style={{ margin: 0 }}>
+                    <label>{isKh ? 'ថ្នាក់ (Class)' : 'Class'}</label>
+                    <input
+                      type="text"
+                      value={currentClass}
+                      readOnly
+                      style={{ background: 'var(--panel-2)', cursor: 'not-allowed', color: 'var(--accent)', fontWeight: '600' }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {formFeedback && (
+                <div className={`msg ${formFeedback.type === 'success' ? 'ok' : 'fail'}`} style={{ margin: 0 }}>
+                  {formFeedback.message}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={isSubmitting || isProcessingFace}
+                style={{ width: '100%', marginTop: '6px', height: '46px', fontSize: '14.5px', background: 'var(--accent-gradient)', color: '#FFFFFF' }}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={18} className="spin-icon" />
+                    <span>{isKh ? 'កំពុងរក្សាទុក...' : 'Saving Student...'}</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={18} />
+                    <span>{isKh ? 'ចុះឈ្មោះនិស្សិត (Save Student)' : 'Register Student'}</span>
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
 
       {/* Panel 2: Enrolled Students List */}
       <div className="panel">
         <h2>{isKh ? `និស្សិតដែលបានចុះឈ្មោះក្នុង Database (${sortedStudents.length})` : `Enrolled Students in Database (${sortedStudents.length})`}</h2>
-        <div style={{ overflowX: 'auto' }}>
+        
+        {/* Desktop Table View */}
+        <div className="desktop-only-table" style={{ overflowX: 'auto' }}>
           <table>
             <thead>
               <tr>
@@ -571,6 +629,55 @@ export default function StudentRegistration({
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Student Cards View */}
+        <div className="mobile-only-cards">
+          {sortedStudents.length === 0 ? (
+            <div className="empty">{isKh ? 'មិនទាន់មាននិស្សិតក្នុងប្រព័ន្ធ' : 'No students enrolled yet.'}</div>
+          ) : (
+            <div className="mobile-student-list">
+              {sortedStudents.map((s, idx) => (
+                <div key={s.id} className="mobile-student-card">
+                  <div className="mobile-card-header">
+                    <img
+                      src={getMediaUrl(s.photo_url || s.photo) || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23263457"/></svg>'}
+                      alt=""
+                      className="mobile-student-thumb"
+                    />
+                    <div className="mobile-card-meta">
+                      <div className="mobile-student-name">{s.full_name}</div>
+                      <div className="mobile-student-id-row">
+                        <span className="mobile-id-badge">{s.student_id}</span>
+                        <span className="mobile-gender-tag">{s.gender || 'Male'}</span>
+                      </div>
+                    </div>
+                    <button 
+                      className="btn ghost btn-icon btn-sm mobile-delete-btn" 
+                      onClick={() => handleDeleteStudent(s.id)}
+                      title="Delete"
+                    >
+                      <Trash2 size={15} className="text-danger" />
+                    </button>
+                  </div>
+
+                  <div className="mobile-card-body">
+                    <div className="mobile-chips-row">
+                      <span className="mobile-chip-tag">📚 {s.major || 'Computer Science'}</span>
+                      <span className="mobile-chip-tag">👥 {s.class_name}</span>
+                    </div>
+                    <div className="mobile-biometric-status">
+                      {s.face_descriptor ? (
+                        <span className="pill present">128-D Vector ✓</span>
+                      ) : (
+                        <span className="pill absent">No Biometric</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

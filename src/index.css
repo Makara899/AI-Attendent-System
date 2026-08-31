@@ -5,28 +5,33 @@
    ========================================================================== */
 
 :root {
-  /* Modern Enterprise Slate Palette */
-  --bg: #0B132B;
-  --panel: #111C38;
-  --panel-2: #18264B;
-  --panel-3: #203260;
-  --line: rgba(99, 102, 241, 0.16);
-  --line-light: rgba(99, 102, 241, 0.28);
+  /* Modern High-End Dark Palette (Deep Slate / Obsidian) */
+  --bg: #090E17;
+  --bg-gradient: radial-gradient(circle at 20% 0%, rgba(99, 102, 241, 0.12) 0%, transparent 50%), radial-gradient(circle at 80% 100%, rgba(16, 185, 129, 0.08) 0%, transparent 50%), #090E17;
+  --panel: #0F172A;
+  --panel-2: #162238;
+  --panel-3: #1E2E4A;
+  --panel-glass: rgba(15, 23, 42, 0.78);
+  --line: rgba(255, 255, 255, 0.08);
+  --line-light: rgba(255, 255, 255, 0.14);
+  --line-accent: rgba(16, 185, 129, 0.35);
+  
   --text: #F8FAFC;
+  --text-heading: #FFFFFF;
   --text-dim: #94A3B8;
   --text-muted: #64748B;
   
   /* Primary & Attendance Status Accents */
-  --accent: #10B981; /* Emerald Green (Universal Present/Success) */
+  --accent: #10B981; /* Emerald Green */
   --accent-dim: #059669;
-  --accent-glow: rgba(16, 185, 129, 0.4);
+  --accent-glow: rgba(16, 185, 129, 0.35);
   --accent-bg: rgba(16, 185, 129, 0.12);
-  --accent-border: rgba(16, 185, 129, 0.35);
+  --accent-gradient: linear-gradient(135deg, #10B981 0%, #059669 100%);
 
-  --primary: #6366F1; /* Indigo Blue (Brand / Interactive) */
+  --primary: #6366F1; /* Modern Indigo */
   --primary-hover: #4F46E5;
   --primary-light: #818CF8;
-  --primary-glow: rgba(99, 102, 241, 0.4);
+  --primary-glow: rgba(99, 102, 241, 0.35);
   --primary-bg: rgba(99, 102, 241, 0.12);
   --primary-gradient: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
 
@@ -45,11 +50,10 @@
   --bg-main: var(--bg);
   --bg-card: var(--panel);
   --bg-card-elevated: var(--panel-2);
-  --bg-card-hover: #1e2e58;
-  --bg-input: #0e172e;
+  --bg-input: #0A101D;
   --border-subtle: var(--line);
   --border-color: var(--line);
-  --border-focus: var(--primary);
+  --border-focus: var(--accent);
 
   --success: var(--accent);
   --success-glow: var(--accent-glow);
@@ -57,30 +61,27 @@
   --warning-glow: rgba(245, 158, 11, 0.35);
   --danger-glow: rgba(239, 68, 68, 0.35);
 
-  --text-main: var(--text);
-  --text-heading: #FFFFFF;
-
   /* Typography */
-  --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'Courier New', monospace;
-  --sans: 'Inter', 'Kantumruy Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans Khmer', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+  --sans: 'Inter', 'Kantumruy Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-sans: var(--sans);
   --font-heading: 'Outfit', 'Kantumruy Pro', var(--sans);
 
   /* Radius & Shadows */
   --radius-xs: 6px;
-  --radius-sm: 8px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
   --radius-full: 9999px;
 
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.65);
-  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.25);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 24px rgba(16, 185, 129, 0.2);
 
-  --transition-fast: 150ms ease;
-  --transition-normal: 250ms ease;
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Global Reset */
