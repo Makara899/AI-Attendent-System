@@ -978,6 +978,7 @@ app.get('/api/attendance/summary', async (req, res) => {
 
       const presentList = [];
       const lateList = [];
+      const excusedList = [];
       const absentList = [];
 
       (totalStudents || []).forEach(stu => {
@@ -985,6 +986,8 @@ app.get('/api/attendance/summary', async (req, res) => {
           const record = presentMap.get(stu.id);
           if (record.status === 'LATE') {
             lateList.push(record);
+          } else if (record.status === 'EXCUSED') {
+            excusedList.push(record);
           } else {
             presentList.push(record);
           }
@@ -1007,6 +1010,7 @@ app.get('/api/attendance/summary', async (req, res) => {
       const totalCount = (totalStudents || []).length;
       const presentCount = presentList.length;
       const lateCount = lateList.length;
+      const excusedCount = excusedList.length;
       const absentCount = absentList.length;
       const attendanceRate = totalCount > 0 ? Math.round(((presentCount + lateCount) / totalCount) * 100) : 0;
 
@@ -1019,11 +1023,13 @@ app.get('/api/attendance/summary', async (req, res) => {
             totalCount,
             presentCount,
             lateCount,
+            excusedCount,
             absentCount,
             attendanceRate
           },
           presentList,
           lateList,
+          excusedList,
           absentList,
           allRecords: formattedRecords
         }
@@ -1053,6 +1059,7 @@ app.get('/api/attendance/summary', async (req, res) => {
 
     const presentList = [];
     const lateList = [];
+    const excusedList = [];
     const absentList = [];
 
     totalStudents.forEach(stu => {
@@ -1060,6 +1067,8 @@ app.get('/api/attendance/summary', async (req, res) => {
         const record = presentMap.get(stu.id);
         if (record.status === 'LATE') {
           lateList.push(record);
+        } else if (record.status === 'EXCUSED') {
+          excusedList.push(record);
         } else {
           presentList.push(record);
         }
@@ -1082,6 +1091,7 @@ app.get('/api/attendance/summary', async (req, res) => {
     const totalCount = totalStudents.length;
     const presentCount = presentList.length;
     const lateCount = lateList.length;
+    const excusedCount = excusedList.length;
     const absentCount = absentList.length;
     const attendanceRate = totalCount > 0 ? Math.round(((presentCount + lateCount) / totalCount) * 100) : 0;
 
@@ -1094,11 +1104,13 @@ app.get('/api/attendance/summary', async (req, res) => {
           totalCount,
           presentCount,
           lateCount,
+          excusedCount,
           absentCount,
           attendanceRate
         },
         presentList,
         lateList,
+        excusedList,
         absentList,
         allRecords: attendanceRecords
       }

@@ -513,6 +513,19 @@ button.btn:disabled, .btn:disabled {
   filter: drop-shadow(0 0 4px #F59E0B);
 }
 
+.pill.excused, .status-pill.excused, .status-pill-sm.excused {
+  background: rgba(168, 85, 247, 0.15);
+  color: #C084FC;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+}
+
+.pill.excused::before, .status-pill.excused::before, .status-pill-sm.excused::before {
+  content: '●';
+  color: #C084FC;
+  font-size: 10px;
+  filter: drop-shadow(0 0 4px #C084FC);
+}
+
 .pill.status-200 {
   background: rgba(16, 185, 129, 0.15);
   color: #10B981;
@@ -529,6 +542,54 @@ button.btn:disabled, .btn:disabled {
   background: rgba(245, 158, 11, 0.15);
   color: #F59E0B;
   border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.pill-btn {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pill-btn:hover {
+  background: var(--panel-3);
+  border-color: var(--line-light);
+  color: var(--text);
+}
+
+.pill-btn.active {
+  background: var(--accent);
+  color: #04231D !important;
+  border-color: var(--accent);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+}
+
+.attendance-roster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.roster-section {
+  margin-bottom: 0 !important;
+}
+
+.student-list-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 /* Tables with Subtle Zebra Rows for High Readability */

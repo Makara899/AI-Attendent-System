@@ -185,6 +185,7 @@ export default function AttendanceReports({ activeSession, sessions = [], langua
                   <option value="ALL">{isKh ? 'ទាំងអស់ (All)' : 'All'}</option>
                   <option value="PRESENT">{isKh ? 'វត្តមាន (Present)' : 'Present'}</option>
                   <option value="LATE">{isKh ? 'មកយឺត (Late)' : 'Late'}</option>
+                  <option value="EXCUSED">{isKh ? 'សុំច្បាប់ (Excused)' : 'Excused'}</option>
                 </select>
               </div>
             </div>
