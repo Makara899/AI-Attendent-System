@@ -164,8 +164,81 @@ export default function LiveScanner({
     }, 150);
   };
 
+  const isProcessingRef = useRef(false);
+  const loopActiveRef = useRef(false);
+
+  const startRecognitionLoop = () => {
+    loopActiveRef.current = true;
+
+    const processFrame = async () => {
+      if (!loopActiveRef.current) return;
+
+      if (!videoRef.current || !canvasRef.current || videoRef.current.paused || videoRef.current.ended) {
+        if (loopActiveRef.current) {
+          scanIntervalRef.current = setTimeout(processFrame, 150);
+        }
+        return;
+      }
+
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+
+      if (!video.videoWidth || !video.videoHeight || isProcessingRef.current) {
+        if (loopActiveRef.current) {
+          scanIntervalRef.current = setTimeout(processFrame, 150);
+        }
+        return;
+      }
+
+      isProcessingRef.current = true;
+
+      try {
+        // Run AI Recognition (Non-overlapping, non-blocking)
+        const results = await faceService.recognizeFacesInVideo(
+          video, 
+          detectorType || 'tiny', 
+          distanceThreshold || 0.58
+        );
+
+        setDetectedCount(results.length);
+
+        // Draw Canvas Overlays
+        faceService.drawRecognitionOverlay(canvas, video, results);
+
+        if (results.length === 0) {
+          setUnknownFaceDetected(false);
+        } else {
+          let hasUnmatched = false;
+
+          results.forEach(res => {
+            if (res.isRecognized && res.matchedStudent) {
+              handleStudentRecognized(res.matchedStudent, res.confidence);
+            } else {
+              hasUnmatched = true;
+            }
+          });
+
+          setUnknownFaceDetected(hasUnmatched);
+        }
+      } catch (err) {
+        console.warn('Face detection error:', err);
+      } finally {
+        isProcessingRef.current = false;
+        if (loopActiveRef.current) {
+          // Controlled 100ms throttle between inference frames to keep CPU cool and animations at 60fps
+          scanIntervalRef.current = setTimeout(processFrame, 100);
+        }
+      }
+    };
+
+    processFrame();
+  };
+
   const stopCamera = () => {
+    loopActiveRef.current = false;
+    isProcessingRef.current = false;
     if (scanIntervalRef.current) {
+      clearTimeout(scanIntervalRef.current);
       clearInterval(scanIntervalRef.current);
       scanIntervalRef.current = null;
     }
@@ -177,54 +250,6 @@ export default function LiveScanner({
       videoRef.current.srcObject = null;
     }
     setIsCameraActive(false);
-  };
-
-  const startRecognitionLoop = () => {
-    if (scanIntervalRef.current) clearInterval(scanIntervalRef.current);
-
-    scanIntervalRef.current = setInterval(async () => {
-      if (!videoRef.current || !canvasRef.current || videoRef.current.paused || videoRef.current.ended) {
-        return;
-      }
-
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-
-      if (!video.videoWidth || !video.videoHeight) return;
-
-      try {
-        // Run AI Recognition
-        const results = await faceService.recognizeFacesInVideo(
-          video, 
-          detectorType || 'ssd', 
-          distanceThreshold || 0.58
-        );
-
-        setDetectedCount(results.length);
-
-        // Draw Canvas Overlays
-        faceService.drawRecognitionOverlay(canvas, video, results);
-
-        if (results.length === 0) {
-          setUnknownFaceDetected(false);
-          return;
-        }
-
-        let hasUnmatched = false;
-
-        results.forEach(res => {
-          if (res.isRecognized && res.matchedStudent) {
-            handleStudentRecognized(res.matchedStudent, res.confidence);
-          } else {
-            hasUnmatched = true;
-          }
-        });
-
-        setUnknownFaceDetected(hasUnmatched);
-      } catch (err) {
-        console.warn('Face detection error:', err);
-      }
-    }, 120);
   };
 
   const handleStudentRecognized = async (matchedStudent, confidence) => {

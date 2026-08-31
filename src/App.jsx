@@ -31,7 +31,7 @@ export default function App() {
   // AI Face Engine Status & Boot sequence
   const [aiReady, setAiReady] = useState(false);
   const [aiLoadingMessage, setAiLoadingMessage] = useState('Connecting to system core...');
-  const [detectorType, setDetectorType] = useState('ssd'); // 'ssd' | 'tiny'
+  const [detectorType, setDetectorType] = useState('tiny'); // 'tiny' (High FPS / Ultra Smooth) | 'ssd'
   const [distanceThreshold, setDistanceThreshold] = useState(0.58);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [speechEnabled, setSpeechEnabled] = useState(true);
