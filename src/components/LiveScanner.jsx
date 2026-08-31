@@ -321,6 +321,17 @@ export default function LiveScanner({
             {/* Laser Scanline */}
             <div className="scanline"></div>
 
+            {/* Camera Loading Overlay */}
+            {cameraLoading && (
+              <div className="cam-loading-overlay">
+                <div className="cam-radar-spinner"></div>
+                <div className="cam-loading-text">
+                  <span className="dot"></span>
+                  <span>{isKh ? 'កំពុងភ្ជាប់កាមេរា និងដំណើរការ AI...' : 'Initializing Camera & AI Engine...'}</span>
+                </div>
+              </div>
+            )}
+
             <div className="cam-status">
               {isCameraActive ? (isKh ? 'កាមេរាកំពុងដំណើរការ' : 'LIVE AI SCANNING') : (isKh ? 'កាមេរាបិទ' : 'CAMERA OFF')}
             </div>

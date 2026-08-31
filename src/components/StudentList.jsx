@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Trash2, UserPlus } from 'lucide-react';
+import { Search, Trash2, UserPlus, RefreshCw } from 'lucide-react';
 import { api, getMediaUrl } from '../services/api';
+import { TableSkeleton } from './SkeletonLoader';
 
 export default function StudentList({
   students,
@@ -8,12 +9,22 @@ export default function StudentList({
   sessions = [],
   onRefresh,
   onNavigateTab,
-  language
+  language,
+  loading = false
 }) {
   const isKh = language === 'kh';
   const [searchTerm, setSearchTerm] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedMajor, setSelectedMajor] = useState(activeSession?.major || 'ALL');
   const [selectedClass, setSelectedClass] = useState(activeSession?.class_name || 'ALL');
+
+  const handleRefreshClick = async () => {
+    setIsRefreshing(true);
+    if (onRefresh) {
+      await onRefresh();
+    }
+    setTimeout(() => setIsRefreshing(false), 400);
+  };
 
   // Auto-sync filters when user chooses a different active session
   useEffect(() => {
@@ -84,10 +95,20 @@ export default function StudentList({
             </p>
           </div>
 
-          <button className="btn btn-sm" onClick={() => onNavigateTab('register')}>
-            <UserPlus size={14} />
-            <span>{isKh ? 'ចុះឈ្មោះនិស្សិតថ្មី' : 'Enroll New Student'}</span>
-          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button 
+              className="btn ghost btn-sm" 
+              onClick={handleRefreshClick}
+              disabled={isRefreshing || loading}
+            >
+              <RefreshCw size={14} className={isRefreshing ? 'spin-icon' : ''} />
+              <span>{isRefreshing ? (isKh ? 'កំពុងទាញយក...' : 'Refreshing...') : (isKh ? 'ផ្ទុកឡើងវិញ' : 'Refresh')}</span>
+            </button>
+            <button className="btn btn-sm" onClick={() => onNavigateTab('register')}>
+              <UserPlus size={14} />
+              <span>{isKh ? 'ចុះឈ្មោះនិស្សិតថ្មី' : 'Enroll New Student'}</span>
+            </button>
+          </div>
         </div>
 
         <div className="row" style={{ marginTop: '16px' }}>
@@ -133,29 +154,33 @@ export default function StudentList({
       {/* Panel 2: Clean Students Table with No. and A-Z sorting */}
       <div className="panel">
         <h2>{isKh ? `លទ្ធផលនិស្សិត (${filtered.length})` : `Students (${filtered.length})`}</h2>
-        <div style={{ overflowX: 'auto' }}>
-          <table>
-            <thead>
-              <tr>
-                <th style={{ width: '45px', textAlign: 'center' }}>{isKh ? 'ល.រ' : 'No.'}</th>
-                <th>{isKh ? 'រូបថត' : 'Photo'}</th>
-                <th>{isKh ? 'អត្តលេខ' : 'Student ID'}</th>
-                <th>{isKh ? 'ឈ្មោះពេញ (A-Z)' : 'Full Name (A-Z)'}</th>
-                <th>{isKh ? 'ជំនាញ' : 'Major'}</th>
-                <th>{isKh ? 'ថ្នាក់' : 'Class'}</th>
-                <th>{isKh ? 'ភេទ' : 'Gender'}</th>
-                <th>{isKh ? 'ទិន្នន័យ AI Biometric' : 'AI Face Biometrics'}</th>
-                <th>{isKh ? 'សកម្មភាព' : 'Action'}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
+        
+        {loading || isRefreshing ? (
+          <TableSkeleton rows={6} cols={6} />
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table>
+              <thead>
                 <tr>
-                  <td colSpan="9" className="empty">
-                    {isKh ? 'គ្មានទិន្នន័យនិស្សិតត្រូវនឹងលក្ខខណ្ឌស្វែងរក' : 'No students match your filter.'}
-                  </td>
+                  <th style={{ width: '45px', textAlign: 'center' }}>{isKh ? 'ល.រ' : 'No.'}</th>
+                  <th>{isKh ? 'រូបថត' : 'Photo'}</th>
+                  <th>{isKh ? 'អត្តលេខ' : 'Student ID'}</th>
+                  <th>{isKh ? 'ឈ្មោះពេញ (A-Z)' : 'Full Name (A-Z)'}</th>
+                  <th>{isKh ? 'ជំនាញ' : 'Major'}</th>
+                  <th>{isKh ? 'ថ្នាក់' : 'Class'}</th>
+                  <th>{isKh ? 'ភេទ' : 'Gender'}</th>
+                  <th>{isKh ? 'ទិន្នន័យ AI Biometric' : 'AI Face Biometrics'}</th>
+                  <th>{isKh ? 'សកម្មភាព' : 'Action'}</th>
                 </tr>
-              ) : (
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan="9" className="empty">
+                      {isKh ? 'គ្មានទិន្នន័យនិស្សិតត្រូវនឹងលក្ខខណ្ឌស្វែងរក' : 'No students match your filter.'}
+                    </td>
+                  </tr>
+                ) : (
                 filtered.map((s, idx) => (
                   <tr key={s.id}>
                     <td style={{ textAlign: 'center', fontFamily: 'var(--mono)', color: 'var(--accent)' }}>
@@ -190,9 +215,10 @@ export default function StudentList({
                   </tr>
                 ))
               )}
-            </tbody>
-          </table>
-        </div>
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

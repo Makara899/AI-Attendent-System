@@ -16,15 +16,23 @@ import {
   Percent
 } from 'lucide-react';
 import { getMediaUrl, formatDisplayTime } from '../services/api';
+import { DashboardSkeleton } from './SkeletonLoader';
 
 export default function AttendanceDashboard({
   summaryData,
   activeSession,
   onNavigateTab,
   onOpenFallback,
-  language
+  language,
+  loading = false
 }) {
   const isKh = language === 'kh';
+
+  // If data is loading or not yet ready, show high-tech cyber skeleton
+  if (loading || !summaryData) {
+    return <DashboardSkeleton language={language} />;
+  }
+
   const stats = summaryData?.stats || {
     totalCount: 0,
     presentCount: 0,
@@ -38,7 +46,7 @@ export default function AttendanceDashboard({
   const absentList = summaryData?.absentList || [];
 
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-container fade-in-fast">
       {/* Session Hero Banner with Mesh Background */}
       <div className="session-hero-card">
         <div className="hero-content">

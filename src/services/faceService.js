@@ -11,32 +11,35 @@ class FaceService {
 
   // Load all required face-api AI neural network models
   async loadModels(onProgress = null) {
-    if (this.modelsLoaded) return true;
+    if (this.modelsLoaded) {
+      if (onProgress) onProgress('AI Models Ready', 100);
+      return true;
+    }
     if (this.loadingPromise) return this.loadingPromise;
 
     this.loadingPromise = (async () => {
       try {
         console.log('🔄 Loading AI Face Recognition Models from:', this.modelPath);
-        if (onProgress) onProgress('Loading face detectors...');
+        if (onProgress) onProgress('Loading SSD MobileNet detector...', 20);
 
         // 1. SSD MobileNet v1 (High accuracy face detection)
         await faceapi.nets.ssdMobilenetv1.loadFromUri(this.modelPath);
-        if (onProgress) onProgress('Loading tiny face detector...');
+        if (onProgress) onProgress('Loading Tiny Face detector...', 45);
 
         // 2. Tiny Face Detector (Faster lightweight detector)
         await faceapi.nets.tinyFaceDetector.loadFromUri(this.modelPath);
-        if (onProgress) onProgress('Loading 68-point landmarks...');
+        if (onProgress) onProgress('Loading 68-point landmarks neural net...', 70);
 
         // 3. 68-Point Face Landmark Net
         await faceapi.nets.faceLandmark68Net.loadFromUri(this.modelPath);
-        if (onProgress) onProgress('Loading 128D face recognition neural net...');
+        if (onProgress) onProgress('Loading 128D face recognition neural net...', 90);
 
         // 4. Face Recognition Net (Generates 128D biometric embedding)
         await faceapi.nets.faceRecognitionNet.loadFromUri(this.modelPath);
 
         this.modelsLoaded = true;
         console.log('✅ All Face Recognition Models Loaded Successfully!');
-        if (onProgress) onProgress('Models ready');
+        if (onProgress) onProgress('AI Neural Engine ready', 100);
         return true;
       } catch (error) {
         console.error('❌ Failed to load Face-API models:', error);

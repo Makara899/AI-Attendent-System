@@ -6,19 +6,31 @@ import {
   Search, 
   Trash2, 
   ShieldCheck, 
-  RefreshCw 
+  RefreshCw,
+  Loader2 
 } from 'lucide-react';
 import { api, getMediaUrl, formatDisplayTime } from '../services/api';
+import { TableSkeleton } from './SkeletonLoader';
 
 export default function AttendanceList({
   summaryData,
   activeSession,
   onRefresh,
   onOpenFallback,
-  language
+  language,
+  loading = false
 }) {
   const isKh = language === 'kh';
   const [searchTerm, setSearchTerm] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefreshClick = async () => {
+    setIsRefreshing(true);
+    if (onRefresh) {
+      await onRefresh();
+    }
+    setTimeout(() => setIsRefreshing(false), 400);
+  };
 
   const presentList = summaryData?.presentList || [];
   const lateList = summaryData?.lateList || [];
@@ -80,9 +92,13 @@ export default function AttendanceList({
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{ maxWidth: '360px' }}
           />
-          <button className="btn ghost btn-sm" onClick={onRefresh}>
-            <RefreshCw size={14} />
-            <span>{isKh ? 'ផ្ទុកឡើងវិញ' : 'Refresh'}</span>
+          <button 
+            className="btn ghost btn-sm" 
+            onClick={handleRefreshClick}
+            disabled={isRefreshing}
+          >
+            <RefreshCw size={14} className={isRefreshing ? 'spin-icon' : ''} />
+            <span>{isRefreshing ? (isKh ? 'កំពុងទាញយក...' : 'Refreshing...') : (isKh ? 'ផ្ទុកឡើងវិញ' : 'Refresh')}</span>
           </button>
           <button className="btn ghost btn-sm" onClick={onOpenFallback}>
             <ShieldCheck size={14} className="text-warning" />

@@ -8,7 +8,8 @@ import {
   BarChart3,
   CalendarDays,
   Users,
-  Sparkles
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 
 export default function Navbar({
@@ -23,7 +24,8 @@ export default function Navbar({
   onOpenAIHelp,
   onOpenSettings,
   language,
-  setLanguage
+  setLanguage,
+  isGlobalLoading = false
 }) {
   const isKh = language === 'kh';
 
@@ -47,6 +49,13 @@ export default function Navbar({
 
   return (
     <>
+      {/* Top Global Loading Bar */}
+      {isGlobalLoading && (
+        <div className="top-global-loading-bar">
+          <div className="loading-bar-indicator"></div>
+        </div>
+      )}
+
       <header className="top-header">
         <div className="wrap">
           <div className="header-top-row">
@@ -77,8 +86,12 @@ export default function Navbar({
 
               {/* AI Engine Name Badge */}
               <div className={`engine-badge ${aiReady ? 'ready' : 'loading'}`} title="AI Neural Engine">
-                <span className="dot"></span>
-                <span>{aiReady ? (detectorType === 'tiny' ? 'TINY DETECTOR' : 'SMART ENGINE') : 'LOADING AI...'}</span>
+                {aiReady ? (
+                  <span className="dot"></span>
+                ) : (
+                  <Loader2 size={12} className="spin-icon text-warn" />
+                )}
+                <span>{aiReady ? (detectorType === 'tiny' ? 'TINY DETECTOR' : 'SMART ENGINE') : (isKh ? 'កំពុងដំណើរការ AI...' : 'LOADING AI...')}</span>
               </div>
 
               {/* Language Switcher */}

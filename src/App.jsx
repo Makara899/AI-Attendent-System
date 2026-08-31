@@ -11,6 +11,7 @@ import SessionManager from './components/SessionManager';
 import ManualFallbackModal from './components/ManualFallbackModal';
 import AIExplanationModal from './components/AIExplanationModal';
 import SettingsModal from './components/SettingsModal';
+import AppLoader from './components/AppLoader';
 
 import { faceService } from './services/faceService';
 import { api } from './services/api';
@@ -27,13 +28,23 @@ export default function App() {
   const [students, setStudents] = useState([]);
   const [summaryData, setSummaryData] = useState(null);
 
-  // AI Face Engine Status
+  // AI Face Engine Status & Boot sequence
   const [aiReady, setAiReady] = useState(false);
-  const [aiLoadingMessage, setAiLoadingMessage] = useState('Loading AI weights...');
+  const [aiLoadingMessage, setAiLoadingMessage] = useState('Connecting to system core...');
   const [detectorType, setDetectorType] = useState('ssd'); // 'ssd' | 'tiny'
   const [distanceThreshold, setDistanceThreshold] = useState(0.58);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [speechEnabled, setSpeechEnabled] = useState(true);
+
+  // System Loading States
+  const [isBooting, setIsBooting] = useState(true);
+  const [bootProgress, setBootProgress] = useState(15);
+  const [studentsLoaded, setStudentsLoaded] = useState(false);
+  const [sessionsLoaded, setSessionsLoaded] = useState(false);
+  const [bootError, setBootError] = useState(null);
+  const [isGlobalLoading, setIsGlobalLoading] = useState(false);
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
+  const [isStudentsLoading, setIsStudentsLoading] = useState(false);
 
   // Modals
   const [isFallbackOpen, setIsFallbackOpen] = useState(false);
@@ -42,10 +53,29 @@ export default function App() {
 
   // 1. Initial Load: Neural Net Models, Sessions, Students
   useEffect(() => {
-    loadAIModels();
-    fetchSessions();
-    fetchStudents();
+    bootApplication();
   }, []);
+
+  const bootApplication = async () => {
+    setIsBooting(true);
+    setBootProgress(15);
+    setAiLoadingMessage('Initializing AI neural models & server connection...');
+
+    try {
+      // Parallel loading: AI Models & Database resources
+      const aiPromise = loadAIModels();
+      const sessionsPromise = fetchSessions();
+      const studentsPromise = fetchStudents();
+
+      await Promise.allSettled([aiPromise, sessionsPromise, studentsPromise]);
+      setBootProgress(100);
+      setAiLoadingMessage('System initialization complete!');
+    } catch (err) {
+      console.error('System boot error:', err);
+      setBootError('System boot encountered an issue. You may continue to the app.');
+      setBootProgress(100);
+    }
+  };
 
   // 2. Fetch Attendance Summary when activeSession changes
   useEffect(() => {
@@ -58,7 +88,7 @@ export default function App() {
   useEffect(() => {
     if (!activeSessionId) return;
     const interval = setInterval(() => {
-      fetchSummary(activeSessionId);
+      fetchSummary(activeSessionId, false); // silent background fetch
     }, 4000);
     return () => clearInterval(interval);
   }, [activeSessionId]);
@@ -66,15 +96,22 @@ export default function App() {
   const loadAIModels = async () => {
     try {
       setAiReady(false);
-      await faceService.loadModels((msg) => setAiLoadingMessage(msg));
+      await faceService.loadModels((msg, percent) => {
+        setAiLoadingMessage(msg);
+        if (percent) {
+          setBootProgress(prev => Math.max(prev, Math.round(percent * 0.7)));
+        }
+      });
       setAiReady(true);
+      setBootProgress(prev => Math.max(prev, 75));
     } catch (err) {
       console.error('Failed to initialize AI models:', err);
-      setAiLoadingMessage('AI initialization failed. Check models directory.');
+      setAiLoadingMessage('AI initialization warning. Check models directory.');
     }
   };
 
   const fetchSessions = async () => {
+    setIsGlobalLoading(true);
     try {
       const res = await api.getSessions();
       if (res.success) {
@@ -85,25 +122,35 @@ export default function App() {
         } else if (!activeSessionId || !list.some(s => s.id === activeSessionId)) {
           setActiveSessionId(list[0].id);
         }
+        setSessionsLoaded(true);
+        setBootProgress(prev => Math.max(prev, 85));
       }
     } catch (e) {
       console.error('Error loading sessions:', e);
+    } finally {
+      setIsGlobalLoading(false);
     }
   };
 
   const fetchStudents = async () => {
+    setIsStudentsLoading(true);
     try {
       const res = await api.getStudents();
       if (res.success) {
-        setStudents(res.data);
+        setStudents(res.data || []);
         faceService.buildFaceMatcher(res.data, distanceThreshold);
+        setStudentsLoaded(true);
+        setBootProgress(prev => Math.max(prev, 95));
       }
     } catch (e) {
       console.error('Error loading students:', e);
+    } finally {
+      setIsStudentsLoading(false);
     }
   };
 
-  const fetchSummary = async (sessionId) => {
+  const fetchSummary = async (sessionId, showLoading = true) => {
+    if (showLoading) setIsSummaryLoading(true);
     try {
       const res = await api.getAttendanceSummary(sessionId);
       if (res.success) {
@@ -111,6 +158,8 @@ export default function App() {
       }
     } catch (e) {
       console.error('Error loading attendance summary:', e);
+    } finally {
+      if (showLoading) setIsSummaryLoading(false);
     }
   };
 
@@ -118,7 +167,21 @@ export default function App() {
 
   return (
     <div className="app-layout">
-      {/* Top Navbar */}
+      {/* Full-Screen Cyber AI App Bootloader */}
+      {isBooting && (
+        <AppLoader
+          progress={bootProgress}
+          statusMessage={aiLoadingMessage}
+          aiReady={aiReady}
+          studentsLoaded={studentsLoaded}
+          sessionsLoaded={sessionsLoaded}
+          error={bootError}
+          onComplete={() => setIsBooting(false)}
+          language={language}
+        />
+      )}
+
+      {/* Top Navbar with Global Loading Bar */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -132,6 +195,7 @@ export default function App() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         language={language}
         setLanguage={setLanguage}
+        isGlobalLoading={isGlobalLoading || isSummaryLoading}
       />
 
       {/* Main Content Area */}
@@ -157,6 +221,7 @@ export default function App() {
             onNavigateTab={(tab) => setActiveTab(tab)}
             onOpenFallback={() => setIsFallbackOpen(true)}
             language={language}
+            loading={isSummaryLoading}
           />
         )}
 
@@ -164,9 +229,10 @@ export default function App() {
           <AttendanceList
             summaryData={summaryData}
             activeSession={activeSession}
-            onRefresh={() => fetchSummary(activeSessionId)}
+            onRefresh={() => fetchSummary(activeSessionId, true)}
             onOpenFallback={() => setIsFallbackOpen(true)}
             language={language}
+            loading={isSummaryLoading}
           />
         )}
 
@@ -176,7 +242,7 @@ export default function App() {
             sessions={sessions}
             onStudentAdded={() => {
               fetchStudents();
-              if (activeSessionId) fetchSummary(activeSessionId);
+              if (activeSessionId) fetchSummary(activeSessionId, false);
             }}
             language={language}
             aiReady={aiReady}
@@ -191,6 +257,7 @@ export default function App() {
             onRefresh={fetchStudents}
             onNavigateTab={(tab) => setActiveTab(tab)}
             language={language}
+            loading={isStudentsLoading}
           />
         )}
 

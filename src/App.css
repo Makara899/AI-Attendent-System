@@ -982,3 +982,649 @@ tbody tr:hover {
     border-radius: 12px;
   }
 }
+
+/* ==========================================================================
+   Cyber AI App Bootloader & Loading States
+   ========================================================================== */
+
+/* Fullscreen Overlay */
+.app-loader-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  background-color: #070D1E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow: hidden;
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.app-loader-overlay.fade-out {
+  opacity: 0;
+  transform: scale(1.02);
+  pointer-events: none;
+}
+
+/* Ambient Cyber Glows */
+.loader-ambient-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  opacity: 0.25;
+}
+
+.loader-ambient-glow.glow-1 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, transparent 70%);
+  top: -100px;
+  left: 20%;
+  animation: ambient-float 8s ease-in-out infinite alternate;
+}
+
+.loader-ambient-glow.glow-2 {
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.45) 0%, transparent 70%);
+  bottom: -100px;
+  right: 20%;
+  animation: ambient-float 9s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes ambient-float {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(40px) scale(1.1); }
+}
+
+.loader-grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 36px 36px;
+  pointer-events: none;
+}
+
+/* Loader Central Card */
+.loader-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 540px;
+  background: rgba(17, 28, 56, 0.88);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 35px rgba(16, 185, 129, 0.12);
+  border-radius: 20px;
+  padding: 36px 32px 30px;
+  text-align: center;
+  animation: loader-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes loader-slide-up {
+  0% { opacity: 0; transform: translateY(24px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Biometric Radar Circle */
+.loader-biometric-circle {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scanner-radar-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px dashed rgba(16, 185, 129, 0.4);
+  animation: radar-rotate 8s linear infinite;
+}
+
+.scanner-radar-ring.outer {
+  inset: -8px;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-left-color: var(--accent);
+  border-right-color: transparent;
+  animation: radar-rotate 4s linear infinite reverse;
+}
+
+@keyframes radar-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.scanner-sweep-line {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(16, 185, 129, 0.28) 330deg, #10B981 360deg);
+  animation: radar-rotate 2.2s linear infinite;
+  mask: radial-gradient(circle, transparent 38px, black 39px);
+  -webkit-mask: radial-gradient(circle, transparent 38px, black 39px);
+}
+
+.scanner-inner-core {
+  position: relative;
+  z-index: 3;
+  width: 56px;
+  height: 56px;
+  background: radial-gradient(circle, #10B981 0%, #059669 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #04231D;
+  box-shadow: 0 0 24px rgba(16, 185, 129, 0.6);
+  animation: core-pulse 2s ease-in-out infinite;
+}
+
+@keyframes core-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(16, 185, 129, 0.5); }
+  50% { transform: scale(1.06); box-shadow: 0 0 32px rgba(16, 185, 129, 0.85); }
+}
+
+/* Scanner Corners */
+.scanner-corner {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-color: var(--accent);
+  border-style: solid;
+  opacity: 0.8;
+}
+
+.scanner-corner.tl { top: -14px; left: -14px; border-width: 2px 0 0 2px; }
+.scanner-corner.tr { top: -14px; right: -14px; border-width: 2px 2px 0 0; }
+.scanner-corner.bl { bottom: -14px; left: -14px; border-width: 0 0 2px 2px; }
+.scanner-corner.br { bottom: -14px; right: -14px; border-width: 0 2px 2px 0; }
+
+/* Loader Header */
+.loader-header {
+  margin-bottom: 24px;
+}
+
+.loader-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  margin-bottom: 12px;
+}
+
+.loader-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: pulse 1.5s infinite;
+}
+
+.loader-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+
+.loader-subtitle {
+  font-size: 13.5px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Progress Section */
+.loader-progress-section {
+  background: rgba(14, 23, 46, 0.7);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.progress-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 12.5px;
+}
+
+.progress-status-text {
+  color: var(--text);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.progress-number {
+  font-family: var(--mono);
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 13.5px;
+}
+
+.loader-progress-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  position: relative;
+}
+
+.loader-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #6366F1 0%, #10B981 100%);
+  border-radius: var(--radius-full);
+  transition: width 0.35s ease;
+  position: relative;
+}
+
+.progress-glow-tip {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 16px;
+  background: #FFFFFF;
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 10px #FFFFFF, 0 0 16px var(--accent);
+}
+
+/* Boot Step Items */
+.loader-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-bottom: 22px;
+  text-align: left;
+}
+
+.loader-step-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: rgba(24, 38, 75, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 12.5px;
+  transition: all 0.25s ease;
+}
+
+.loader-step-item.step-done {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.22);
+}
+
+.step-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  margin-right: 10px;
+}
+
+.step-spinner-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--warn);
+  box-shadow: 0 0 6px var(--warn);
+  animation: pulse 1.2s infinite;
+}
+
+.step-info {
+  flex: 1;
+}
+
+.step-label {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.step-status-tag {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.tag-ready {
+  color: var(--accent);
+  background: rgba(16, 185, 129, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.tag-loading {
+  color: var(--warn);
+  background: rgba(245, 158, 11, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.loader-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-enter {
+  width: 100%;
+  padding: 12px 20px;
+  font-size: 14.5px;
+  font-weight: 700;
+  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35);
+  animation: glow-breathe 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow-breathe {
+  0% { box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3); }
+  100% { box-shadow: 0 6px 24px rgba(16, 185, 129, 0.6); }
+}
+
+.btn-skip {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* ==========================================================================
+   Top Global Loading Bar
+   ========================================================================== */
+.top-global-loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 99999;
+  background: rgba(99, 102, 241, 0.2);
+  overflow: hidden;
+}
+
+.loading-bar-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, #10B981, #6366F1, transparent);
+  box-shadow: 0 0 10px var(--accent);
+  animation: global-bar-slide 1.5s ease-in-out infinite;
+}
+
+@keyframes global-bar-slide {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
+
+/* ==========================================================================
+   Camera Loading & Processing Overlays
+   ========================================================================== */
+.cam-loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: rgba(7, 13, 30, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.cam-radar-spinner {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 3px solid rgba(16, 185, 129, 0.2);
+  border-top-color: var(--accent);
+  border-right-color: var(--primary-light);
+  animation: spin 0.9s linear infinite;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+}
+
+.cam-loading-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  background: rgba(24, 38, 75, 0.9);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  padding: 6px 14px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+/* Cyber Spinner Utility */
+.cyber-spinner {
+  border-radius: 50%;
+  border: 2.5px solid;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.fade-in-fast {
+  animation: fade-in-keyframes 0.3s ease-out;
+}
+
+@keyframes fade-in-keyframes {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* ==========================================================================
+   Skeleton Loaders & Shimmer Animations
+   ========================================================================== */
+.skeleton-line {
+  background: linear-gradient(
+    90deg, 
+    rgba(24, 38, 75, 0.6) 0%, 
+    rgba(32, 50, 96, 0.8) 50%, 
+    rgba(24, 38, 75, 0.6) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.8s infinite ease-in-out;
+  border-radius: 6px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Dashboard Skeleton */
+.dashboard-skeleton-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: fade-in-keyframes 0.3s ease;
+}
+
+.skeleton-hero-banner {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.skeleton-row {
+  display: flex;
+  align-items: center;
+}
+
+.skeleton-row.justify-between {
+  justify-content: space-between;
+}
+
+.skeleton-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.skeleton-stat-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.skeleton-stat-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(32, 50, 96, 0.7);
+  animation: skeleton-shimmer 1.8s infinite ease-in-out;
+}
+
+.skeleton-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 860px) {
+  .skeleton-grid-2col {
+    grid-template-columns: 1fr;
+  }
+}
+
+.skeleton-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.skeleton-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.skeleton-avatar-sm {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(32, 50, 96, 0.7);
+  animation: skeleton-shimmer 1.8s infinite ease-in-out;
+}
+
+.skeleton-chart-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+}
+
+.skeleton-chart-ring {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 16px solid rgba(32, 50, 96, 0.6);
+  animation: skeleton-shimmer 1.8s infinite ease-in-out;
+}
+
+/* Table Skeleton */
+.skeleton-table-wrap {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.skeleton-table-header {
+  display: flex;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(24, 38, 75, 0.5);
+  border-bottom: 1px solid var(--line);
+}
+
+.skeleton-header-cell {
+  flex: 1;
+  height: 14px;
+}
+
+.skeleton-table-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.skeleton-cell {
+  height: 16px;
+}
+
+/* Student Cards Skeleton */
+.student-grid-skeleton {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.skeleton-student-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.skeleton-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  background: rgba(32, 50, 96, 0.7);
+  animation: skeleton-shimmer 1.8s infinite ease-in-out;
+}
+
+.skeleton-info-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+

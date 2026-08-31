@@ -4,7 +4,8 @@ import {
   CameraOff, 
   Upload, 
   Trash2,
-  CheckCircle2
+  CheckCircle2,
+  Loader2
 } from 'lucide-react';
 import { faceService } from '../services/faceService';
 import { api, getMediaUrl } from '../services/api';
@@ -339,7 +340,8 @@ export default function StudentRegistration({
                 disabled={isSubmitting || isProcessingFace}
                 style={{ width: '100%', marginTop: '12px' }}
               >
-                {isSubmitting ? (isKh ? 'កំពុងរក្សាទុក...' : 'Saving...') : (isKh ? 'រក្សាទុកទិន្នន័យនិស្សិត' : 'Register Student')}
+                {isSubmitting && <Loader2 size={16} className="spin-icon" style={{ marginRight: 6 }} />}
+                <span>{isSubmitting ? (isKh ? 'កំពុងរក្សាទុក...' : 'Saving...') : (isKh ? 'រក្សាទុកទិន្នន័យនិស្សិត' : 'Register Student')}</span>
               </button>
             </form>
           </div>
@@ -366,8 +368,6 @@ export default function StudentRegistration({
                 }}
               />
 
-
-
               {/* Photo Preview when snapped/uploaded */}
               {capturedImage && (
                 <img
@@ -377,8 +377,19 @@ export default function StudentRegistration({
                 />
               )}
 
+              {/* AI Processing Face Overlay */}
+              {isProcessingFace && (
+                <div className="cam-loading-overlay">
+                  <div className="cam-radar-spinner"></div>
+                  <div className="cam-loading-text">
+                    <span className="dot"></span>
+                    <span>{isKh ? 'AI កំពុងទាញយក Face Descriptors (128-D)...' : 'AI Extracting 128D Face Descriptors...'}</span>
+                  </div>
+                </div>
+              )}
+
               {/* Camera Off Placeholder when stopped */}
-              {!cameraActive && !capturedImage && (
+              {!cameraActive && !capturedImage && !isProcessingFace && (
                 <div style={{
                   height: '100%',
                   display: 'flex',

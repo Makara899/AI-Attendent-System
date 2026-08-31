@@ -3,10 +3,12 @@ import {
   FileSpreadsheet, 
   Printer, 
   Search, 
-  Download
+  Download,
+  Loader2
 } from 'lucide-react';
 import { api, formatDisplayTime } from '../services/api';
 import { exportService } from '../services/exportService';
+import { TableSkeleton } from './SkeletonLoader';
 
 export default function AttendanceReports({ activeSession, sessions = [], language }) {
   const isKh = language === 'kh';
@@ -189,19 +191,19 @@ export default function AttendanceReports({ activeSession, sessions = [], langua
           </div>
 
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '6px' }}>
-            <button type="submit" className="btn ghost">
-              <Search size={15} />
-              <span>{isKh ? 'ស្វែងរក' : 'Filter Reports'}</span>
+            <button type="submit" className="btn ghost" disabled={loading}>
+              {loading ? <Loader2 size={15} className="spin-icon" /> : <Search size={15} />}
+              <span>{loading ? (isKh ? 'កំពុងស្វែងរក...' : 'Searching...') : (isKh ? 'ស្វែងរក' : 'Filter Reports')}</span>
             </button>
-            <button type="button" className="btn" onClick={handleExportCSV} disabled={records.length === 0}>
+            <button type="button" className="btn" onClick={handleExportCSV} disabled={records.length === 0 || loading}>
               <Download size={15} />
               <span>{isKh ? 'ទាញយក CSV' : 'Export CSV'}</span>
             </button>
-            <button type="button" className="btn ghost" onClick={handleExportExcel} disabled={records.length === 0}>
+            <button type="button" className="btn ghost" onClick={handleExportExcel} disabled={records.length === 0 || loading}>
               <FileSpreadsheet size={15} />
               <span>Excel (.xlsx)</span>
             </button>
-            <button type="button" className="btn ghost" onClick={() => window.print()} disabled={records.length === 0}>
+            <button type="button" className="btn ghost" onClick={() => window.print()} disabled={records.length === 0 || loading}>
               <Printer size={15} />
               <span>{isKh ? 'បោះពុម្ព (Print)' : 'Print'}</span>
             </button>
@@ -212,30 +214,34 @@ export default function AttendanceReports({ activeSession, sessions = [], langua
       {/* Panel 2: Table Results with No. and A-Z sorting */}
       <div className="panel">
         <h2>{isKh ? `លទ្ធផលរបាយការណ៍វត្តមាន (${records.length})` : `Attendance Report Roster (${records.length})`}</h2>
-        <div style={{ overflowX: 'auto' }}>
-          <table>
-            <thead>
-              <tr>
-                <th style={{ width: '45px', textAlign: 'center' }}>{isKh ? 'ល.រ' : 'No.'}</th>
-                <th>{isKh ? 'អត្តលេខ' : 'Student ID'}</th>
-                <th>{isKh ? 'ឈ្មោះនិស្សិត (A-Z)' : 'Full Name (A-Z)'}</th>
-                <th>{isKh ? 'ជំនាញ' : 'Major'}</th>
-                <th>{isKh ? 'ថ្នាក់' : 'Class'}</th>
-                <th>Session</th>
-                <th>{isKh ? 'កាលបរិច្ឆេទ' : 'Date'}</th>
-                <th>{isKh ? 'ម៉ោង' : 'Time'}</th>
-                <th>{isKh ? 'ស្ថានភាព' : 'Status'}</th>
-                <th>{isKh ? 'វិធីសាស្ត្រ' : 'Method'}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {records.length === 0 ? (
+        
+        {loading ? (
+          <TableSkeleton rows={7} cols={8} />
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table>
+              <thead>
                 <tr>
-                  <td colSpan="10" className="empty">
-                    {loading ? (isKh ? 'កំពុងទាញយកទិន្នន័យ...' : 'Loading records...') : (isKh ? 'គ្មានទិន្នន័យត្រូវនឹងលក្ខខណ្ឌស្វែងរក' : 'No records found for the selected filter.')}
-                  </td>
+                  <th style={{ width: '45px', textAlign: 'center' }}>{isKh ? 'ល.រ' : 'No.'}</th>
+                  <th>{isKh ? 'អត្តលេខ' : 'Student ID'}</th>
+                  <th>{isKh ? 'ឈ្មោះនិស្សិត (A-Z)' : 'Full Name (A-Z)'}</th>
+                  <th>{isKh ? 'ជំនាញ' : 'Major'}</th>
+                  <th>{isKh ? 'ថ្នាក់' : 'Class'}</th>
+                  <th>Session</th>
+                  <th>{isKh ? 'កាលបរិច្ឆេទ' : 'Date'}</th>
+                  <th>{isKh ? 'ម៉ោង' : 'Time'}</th>
+                  <th>{isKh ? 'ស្ថានភាព' : 'Status'}</th>
+                  <th>{isKh ? 'វិធីសាស្ត្រ' : 'Method'}</th>
                 </tr>
-              ) : (
+              </thead>
+              <tbody>
+                {records.length === 0 ? (
+                  <tr>
+                    <td colSpan="10" className="empty">
+                      {isKh ? 'គ្មានទិន្នន័យត្រូវនឹងលក្ខខណ្ឌស្វែងរក' : 'No records found for the selected filter.'}
+                    </td>
+                  </tr>
+                ) : (
                 records.map((r, idx) => (
                   <tr key={r.id || idx}>
                     <td style={{ textAlign: 'center', fontFamily: 'var(--mono)', color: 'var(--accent)' }}>
@@ -264,6 +270,7 @@ export default function AttendanceReports({ activeSession, sessions = [], langua
             </tbody>
           </table>
         </div>
+        )}
       </div>
     </div>
   );
