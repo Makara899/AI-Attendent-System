@@ -86,7 +86,7 @@ export default function Navbar({
                   {aiReady ? (
                     <span className="dot"></span>
                   ) : (
-                    <Loader2 size={10} className="spin-icon text-warn" />
+                    <Loader2 size={12} className="spin-icon text-warn" />
                   )}
                   <span>{aiReady ? (detectorType === 'tiny' ? 'TINY' : 'SMART ENGINE') : (isKh ? 'AI...' : 'LOADING...')}</span>
                 </div>
@@ -116,7 +116,7 @@ export default function Navbar({
                   onClick={onOpenSettings}
                   title={isKh ? 'ការកំណត់ AI & System' : 'Settings'}
                 >
-                  <Settings size={18} />
+                  <Settings size={17} />
                 </button>
               </div>
             </div>
