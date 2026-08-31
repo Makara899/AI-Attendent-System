@@ -88,7 +88,7 @@ export default function Navbar({
                   ) : (
                     <Loader2 size={12} className="spin-icon text-warn" />
                   )}
-                  <span>{aiReady ? (detectorType === 'tiny' ? 'TINY' : 'SMART ENGINE') : (isKh ? 'AI...' : 'LOADING...')}</span>
+                  <span>{aiReady ? 'SMART ENGINE' : (isKh ? 'កំពុងដំណើរការ AI...' : 'LOADING AI...')}</span>
                 </div>
 
                 {/* AI Help Button (Near Settings) */}
