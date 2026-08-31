@@ -79,43 +79,46 @@ export default function Navbar({
                 </select>
               </div>
 
-              {/* AI Engine Name Badge */}
-              <div className={`engine-badge ${aiReady ? 'ready' : 'loading'}`} title="AI Neural Engine">
-                {aiReady ? (
-                  <span className="dot"></span>
-                ) : (
-                  <Loader2 size={12} className="spin-icon text-warn" />
-                )}
-                <span>{aiReady ? (detectorType === 'tiny' ? 'TINY DETECTOR' : 'SMART ENGINE') : (isKh ? 'កំពុងដំណើរការ AI...' : 'LOADING AI...')}</span>
+              {/* Secondary Controls Group */}
+              <div className="header-action-row">
+                {/* AI Engine Name Badge */}
+                <div className={`engine-badge ${aiReady ? 'ready' : 'loading'}`} title="AI Neural Engine">
+                  {aiReady ? (
+                    <span className="dot"></span>
+                  ) : (
+                    <Loader2 size={12} className="spin-icon text-warn" />
+                  )}
+                  <span>{aiReady ? (detectorType === 'tiny' ? 'TINY' : 'SMART ENGINE') : (isKh ? 'AI...' : 'LOADING...')}</span>
+                </div>
+
+                {/* AI Help Button (Near Settings) */}
+                <button
+                  className="btn ghost btn-sm btn-ai-help"
+                  onClick={onOpenAIHelp}
+                  title={isKh ? 'ការពន្យល់អំពី AI & ជំនួយ' : 'AI Help & Guide'}
+                >
+                  <Sparkles size={14} style={{ color: 'var(--accent)' }} />
+                  <span>AI Help</span>
+                </button>
+
+                {/* Language Switcher */}
+                <button
+                  className="btn ghost btn-sm btn-lang-switch"
+                  onClick={() => setLanguage(isKh ? 'en' : 'kh')}
+                  title="Switch Language"
+                >
+                  {isKh ? '🇰🇭 ខ្មែរ' : '🇺🇸 EN'}
+                </button>
+
+                {/* Settings */}
+                <button 
+                  className="btn ghost btn-icon btn-sm btn-settings"
+                  onClick={onOpenSettings}
+                  title={isKh ? 'ការកំណត់ AI & System' : 'Settings'}
+                >
+                  <Settings size={15} />
+                </button>
               </div>
-
-              {/* AI Help Button (Near Settings) */}
-              <button
-                className="btn ghost btn-sm btn-ai-help"
-                onClick={onOpenAIHelp}
-                title={isKh ? 'ការពន្យល់អំពី AI & ជំនួយ' : 'AI Help & Guide'}
-              >
-                <Sparkles size={14} style={{ color: 'var(--accent)' }} />
-                <span>AI Help</span>
-              </button>
-
-              {/* Language Switcher */}
-              <button
-                className="btn ghost btn-sm btn-lang-switch"
-                onClick={() => setLanguage(isKh ? 'en' : 'kh')}
-                title="Switch Language"
-              >
-                {isKh ? '🇰🇭 ខ្មែរ' : '🇺🇸 EN'}
-              </button>
-
-              {/* Settings */}
-              <button 
-                className="btn ghost btn-icon btn-sm btn-settings"
-                onClick={onOpenSettings}
-                title={isKh ? 'ការកំណត់ AI & System' : 'Settings'}
-              >
-                <Settings size={15} />
-              </button>
             </div>
           </div>
 

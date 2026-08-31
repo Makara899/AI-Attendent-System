@@ -82,11 +82,18 @@ header.top-header {
 }
 
 /* Universal Equal Height & Alignment (36px) for All Header Items */
+.header-action-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .header-controls .session-picker,
 .header-controls .engine-badge,
 .header-controls .btn-ai-help,
 .header-controls .btn-lang-switch,
 .header-controls .btn-settings,
+.header-action-row > *,
 .header-controls button.btn {
   height: 36px !important;
   min-height: 36px !important;
@@ -872,14 +879,13 @@ tbody tr:hover {
 
   .header-controls {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    flex-direction: column;
     gap: 6px;
     width: 100%;
   }
 
   .session-picker {
-    width: 100%;
+    width: 100% !important;
     box-sizing: border-box;
     justify-content: space-between;
     margin-bottom: 2px;
@@ -890,9 +896,42 @@ tbody tr:hover {
     text-overflow: ellipsis;
   }
 
-  .engine-badge {
-    font-size: 10px;
-    padding: 4px 8px;
+  .header-action-row {
+    display: flex !important;
+    width: 100% !important;
+    gap: 6px !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  .header-action-row .engine-badge {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    padding: 0 6px !important;
+    font-size: 10px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .header-action-row .btn-ai-help {
+    flex: 0 0 auto !important;
+    padding: 0 8px !important;
+    font-size: 11px !important;
+    gap: 4px !important;
+  }
+
+  .header-action-row .btn-lang-switch {
+    flex: 0 0 auto !important;
+    padding: 0 8px !important;
+    font-size: 11px !important;
+  }
+
+  .header-action-row .btn-settings {
+    flex: 0 0 36px !important;
+    width: 36px !important;
+    min-width: 36px !important;
+    padding: 0 !important;
   }
 
   /* Hide top horizontal tabs on mobile in favor of bottom app bar */
