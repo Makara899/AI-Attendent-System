@@ -34,10 +34,11 @@ export default function AttendanceList({
 
   const presentList = summaryData?.presentList || [];
   const lateList = summaryData?.lateList || [];
+  const excusedList = summaryData?.excusedList || [];
   const absentList = summaryData?.absentList || [];
-  const totalCount = presentList.length + lateList.length + absentList.length;
+  const totalCount = presentList.length + lateList.length + excusedList.length + absentList.length;
 
-  const filteredPresent = [...presentList, ...lateList].filter(s => 
+  const filteredPresent = [...presentList, ...lateList, ...excusedList].filter(s => 
     !searchTerm || s.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || s.student_code?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -79,18 +80,22 @@ export default function AttendanceList({
             <div className="l">{isKh ? 'Late (មកយឺត)' : 'Late Check-in'}</div>
           </div>
           <div className="stat">
+            <div className="n" style={{ color: '#C084FC' }}>{excusedList.length}</div>
+            <div className="l">{isKh ? 'Excused (សុំច្បាប់)' : 'Excused / Leave'}</div>
+          </div>
+          <div className="stat">
             <div className="n" style={{ color: 'var(--danger)' }}>{absentList.length}</div>
             <div className="l">{isKh ? 'Absent (អវត្តមាន)' : 'Absent'}</div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '12px' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '12px', flexWrap: 'wrap' }}>
           <input
             type="text"
             placeholder={isKh ? 'ស្វែងរកតាមឈ្មោះ ឬ ID...' : 'Search student by name or ID...'}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ maxWidth: '360px' }}
+            style={{ maxWidth: '360px', flex: '1 1 200px' }}
           />
           <button 
             className="btn ghost btn-sm" 
@@ -107,13 +112,13 @@ export default function AttendanceList({
         </div>
       </div>
 
-      {/* Panel 2: Two Columns for Present vs Absent */}
+      {/* Panel 2: Two Columns for Present/Excused vs Absent */}
       <div className="row">
-        {/* Column 1: Present / Late */}
+        {/* Column 1: Present / Late / Excused */}
         <div className="col">
           <div className="panel" style={{ height: '100%' }}>
-            <h2>✅ {isKh ? `Present (${filteredPresent.length})` : `Present (${filteredPresent.length})`}</h2>
-            <p className="hint">{isKh ? 'និស្សិតដែលបានស្កេនមុខ ឬកត់ត្រាវត្តមានរួចរាល់' : 'Students who checked in for this session'}</p>
+            <h2>✅ {isKh ? `បានកត់ត្រាវត្តមាន (${filteredPresent.length})` : `Recorded Attendance (${filteredPresent.length})`}</h2>
+            <p className="hint">{isKh ? 'និស្សិតដែលមានវត្តមាន មកយឺត ឬសុំច្បាប់' : 'Students checked in or excused for this session'}</p>
 
             {filteredPresent.length === 0 ? (
               <div className="empty">{isKh ? 'មិនទាន់មាននរណាម្នាក់ Present ទេ' : 'No students checked in yet.'}</div>
@@ -134,8 +139,10 @@ export default function AttendanceList({
                       <div className="nm">{r.full_name}</div>
                       <div className="id">{r.student_code || r.student_id} · {r.check_in_method || 'AI_FACE'}</div>
                     </div>
-                    <span className={`pill ${r.status === 'LATE' ? 'late' : 'present'}`}>
-                      {formatDisplayTime(r.check_in_time, r.created_at)} {r.status === 'LATE' ? '(LATE)' : ''}
+                    <span className={`pill ${r.status === 'LATE' ? 'late' : (r.status === 'EXCUSED' ? 'excused' : 'present')}`}>
+                      {r.status === 'EXCUSED' ? (isKh ? 'សុំច្បាប់ (EXCUSED)' : 'EXCUSED') : (
+                        `${formatDisplayTime(r.check_in_time, r.created_at)} ${r.status === 'LATE' ? '(LATE)' : ''}`
+                      )}
                     </span>
                     {r.id && (
                       <button className="btn ghost btn-sm" onClick={() => handleDelete(r.id, r.full_name)}>

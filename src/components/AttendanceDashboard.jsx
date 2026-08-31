@@ -37,12 +37,14 @@ export default function AttendanceDashboard({
     totalCount: 0,
     presentCount: 0,
     lateCount: 0,
+    excusedCount: 0,
     absentCount: 0,
     attendanceRate: 0
   };
 
   const presentList = summaryData?.presentList || [];
   const lateList = summaryData?.lateList || [];
+  const excusedList = summaryData?.excusedList || [];
   const absentList = summaryData?.absentList || [];
 
   return (
@@ -114,7 +116,19 @@ export default function AttendanceDashboard({
           </div>
         </div>
 
-        {/* 4. Absent Count */}
+        {/* 4. Excused Count */}
+        <div className="kpi-card excused" style={{ borderLeft: '3px solid #A855F7' }}>
+          <div className="kpi-icon-box" style={{ color: '#A855F7', background: 'rgba(168, 85, 247, 0.12)' }}>
+            <GraduationCap size={22} />
+          </div>
+          <div className="kpi-info">
+            <span className="kpi-label">{isKh ? 'សុំច្បាប់ (Excused / Leave)' : 'Excused / Leave'}</span>
+            <h3 className="kpi-value" style={{ color: '#C084FC' }}>{stats.excusedCount || 0}</h3>
+            <span className="kpi-subtext">Approved Leave</span>
+          </div>
+        </div>
+
+        {/* 5. Absent Count */}
         <div className="kpi-card absent">
           <div className="kpi-icon-box">
             <UserX size={22} />
@@ -126,7 +140,7 @@ export default function AttendanceDashboard({
           </div>
         </div>
 
-        {/* 5. Attendance Rate with Circular SVG Progress Ring */}
+        {/* 6. Attendance Rate with Circular SVG Progress Ring */}
         <div className="kpi-card rate">
           <div className="circular-progress-wrap">
             <svg viewBox="0 0 36 36" className="circular-chart">
@@ -155,7 +169,7 @@ export default function AttendanceDashboard({
           <div className="card-header flex-between">
             <div className="header-title">
               <CheckCircle2 size={19} className="text-success" />
-              <h3>{isKh ? 'និស្សិតដែលមានវត្តមាន' : 'Checked-In Students'} ({presentList.length + lateList.length})</h3>
+              <h3>{isKh ? 'និស្សិតដែលមានវត្តមាន' : 'Checked-In Students'} ({presentList.length + lateList.length + excusedList.length})</h3>
             </div>
             <button className="btn btn-ghost btn-sm" onClick={() => onNavigateTab('attendance')}>
               <span>{isKh ? 'មើលទាំងអស់' : 'View All'}</span> <ArrowRight size={14} />
@@ -163,12 +177,12 @@ export default function AttendanceDashboard({
           </div>
 
           <div className="card-body scrollable-list">
-            {[...presentList, ...lateList].length === 0 ? (
+            {[...presentList, ...lateList, ...excusedList].length === 0 ? (
               <div className="empty-state-sm">
                 <p>{isKh ? 'មិនទាន់មាននិស្សិតចុះវត្តមាននៅឡើយ' : 'No students checked in yet'}</p>
               </div>
             ) : (
-              [...presentList, ...lateList].slice(0, 6).map((item) => (
+              [...presentList, ...lateList, ...excusedList].slice(0, 6).map((item) => (
                 <div key={item.id} className="mini-student-row">
                   <div className="mini-avatar">
                     {item.snapshot_url || item.profile_photo ? (
@@ -186,7 +200,7 @@ export default function AttendanceDashboard({
                     <span className="mini-sub">{item.student_code} • ⏱ {formatDisplayTime(item.check_in_time, item.created_at)}</span>
                   </div>
                   <div className="mini-badge">
-                    <span className={`status-pill-sm ${item.status === 'LATE' ? 'late' : 'present'}`}>
+                    <span className={`status-pill-sm ${item.status === 'LATE' ? 'late' : (item.status === 'EXCUSED' ? 'excused' : 'present')}`}>
                       {item.status}
                     </span>
                   </div>
