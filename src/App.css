@@ -81,51 +81,118 @@ header.top-header {
   flex-wrap: wrap;
 }
 
+/* Universal Equal Height & Alignment for All Header Items */
+.header-controls .session-picker,
+.header-controls .engine-badge,
+.header-controls .btn-ai-help,
+.header-controls .btn-lang-switch,
+.header-controls .btn-settings {
+  height: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 8px !important;
+  font-size: 12.5px !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  vertical-align: middle !important;
+}
+
 .engine-badge {
   font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+  font-size: 11.5px !important;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--accent);
-  background: rgba(63, 224, 197, 0.08);
-  border: 1px solid rgba(63, 224, 197, 0.25);
-  border-radius: 6px;
-  padding: 5px 9px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  padding: 0 12px !important;
+  gap: 7px;
   white-space: nowrap;
 }
 
 .engine-badge.loading {
   color: var(--warn);
   background: rgba(242, 184, 75, 0.08);
-  border-color: rgba(242, 184, 75, 0.25);
+  border-color: rgba(242, 184, 75, 0.35);
 }
 
 .engine-badge .dot {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+.header-controls .btn-ai-help {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  color: #A5B4FC;
+  padding: 0 12px !important;
+  gap: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.header-controls .btn-ai-help:hover {
+  background: rgba(99, 102, 241, 0.22);
+  border-color: rgba(99, 102, 241, 0.6);
+  color: #FFFFFF;
+}
+
+.header-controls .btn-lang-switch {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 0 12px !important;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.header-controls .btn-lang-switch:hover {
+  background: var(--panel-2);
+  border-color: var(--line-light);
+}
+
+.header-controls .btn-settings {
+  width: 36px !important;
+  min-width: 36px !important;
+  padding: 0 !important;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.header-controls .btn-settings:hover {
+  background: var(--panel-2);
+  border-color: var(--line-light);
+  color: var(--text-heading);
 }
 
 .session-picker {
-  display: flex;
-  align-items: center;
   background: var(--panel-2);
   border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  padding: 0 8px 0 10px;
+  padding: 0 10px !important;
   gap: 6px;
 }
 
 .session-select {
+  height: 100%;
   background: transparent;
   border: none;
   color: var(--text);
   font-size: 12.5px;
   font-weight: 500;
-  padding: 6px 12px 6px 0;
+  padding: 0 8px 0 0;
   cursor: pointer;
   appearance: none;
 }
@@ -840,27 +907,22 @@ tbody tr:hover {
   }
 
   .session-picker {
-    width: 100%;
+    width: 100% !important;
     box-sizing: border-box;
     justify-content: space-between;
     margin-bottom: 2px;
   }
 
-  .session-select {
-    width: 100%;
-    text-overflow: ellipsis;
+  .header-controls .engine-badge,
+  .header-controls .btn-ai-help,
+  .header-controls .btn-lang-switch {
+    flex: 1 1 auto;
+    font-size: 11px !important;
+    padding: 0 8px !important;
   }
 
-  .engine-badge {
-    font-size: 10.5px;
-    padding: 4px 8px;
-  }
-
-  .btn-ai-help {
-    border-color: rgba(99, 102, 241, 0.35);
-    background: rgba(99, 102, 241, 0.12);
-    color: #A5B4FC;
-    font-weight: 600;
+  .header-controls .btn-settings {
+    flex: 0 0 36px !important;
   }
 
   /* Hide top horizontal tabs on mobile in favor of bottom app bar */

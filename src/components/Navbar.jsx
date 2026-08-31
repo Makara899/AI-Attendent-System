@@ -98,16 +98,16 @@ export default function Navbar({
 
               {/* Language Switcher */}
               <button
-                className="btn ghost btn-sm"
+                className="btn ghost btn-sm btn-lang-switch"
                 onClick={() => setLanguage(isKh ? 'en' : 'kh')}
                 title="Switch Language"
               >
-                {isKh ? '🇰🇭 ខ្មែរ' : '🇺🇸 EN'}
+                <span>{isKh ? '🇰🇭 ខ្មែរ' : '🇺🇸 EN'}</span>
               </button>
 
               {/* Settings */}
               <button 
-                className="btn ghost btn-icon btn-sm"
+                className="btn ghost btn-icon btn-sm btn-settings"
                 onClick={onOpenSettings}
                 title={isKh ? 'ការកំណត់ AI & System' : 'Settings'}
               >
