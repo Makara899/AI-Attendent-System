@@ -1258,11 +1258,35 @@ tbody tr:hover {
     padding: 9px 10px;
   }
 
-  /* Modals */
+  /* Native Mobile Slide-Up Bottom Sheet Modal */
+  .modal-overlay {
+    padding: 0 !important;
+    align-items: flex-end !important;
+    background: rgba(4, 7, 17, 0.85) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+
   .modal-content {
-    padding: 18px 14px;
-    max-width: 95%;
-    border-radius: 12px;
+    padding: 22px 18px 30px !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: 85vh !important;
+    border-radius: 24px 24px 0 0 !important;
+    border-bottom: none !important;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.75) !important;
+    animation: slideUpBottomSheet 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  @keyframes slideUpBottomSheet {
+    from {
+      transform: translateY(100%);
+      opacity: 0.5;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 }
 
