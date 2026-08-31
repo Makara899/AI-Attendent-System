@@ -39,21 +39,98 @@ export default function AttendanceReports({ activeSession, sessions = [], langua
   const fetchReports = async () => {
     setLoading(true);
     try {
-      const res = await api.getAttendanceReports({
-        start_date: startDate,
-        end_date: endDate,
-        major: selectedMajor,
-        class_name: selectedClass,
-        status: selectedStatus,
-        search
+      const [reportsRes, studentsRes] = await Promise.all([
+        api.getAttendanceReports({
+          start_date: startDate,
+          end_date: endDate,
+          major: selectedMajor,
+          class_name: selectedClass,
+          status: selectedStatus,
+          search
+        }),
+        api.getStudents(selectedClass !== 'ALL' ? selectedClass : '', '', selectedMajor !== 'ALL' ? selectedMajor : '')
+      ]);
+
+      let backendRecords = (reportsRes.success && reportsRes.data) ? reportsRes.data : [];
+      const allStudents = (studentsRes.success && studentsRes.data) ? studentsRes.data : [];
+
+      // Relevant sessions within date range and filters
+      const targetSessions = (sessions && sessions.length > 0)
+        ? sessions
+        : (activeSession ? [activeSession] : []);
+
+      const relevantSessions = targetSessions.filter(s => {
+        if (selectedMajor !== 'ALL' && s.major && s.major !== selectedMajor) return false;
+        if (selectedClass !== 'ALL' && s.class_name && s.class_name !== selectedClass) return false;
+        if (startDate && s.session_date && s.session_date < startDate) return false;
+        if (endDate && s.session_date && s.session_date > endDate) return false;
+        return true;
       });
-      if (res.success) {
-        // Sort A to Z by full_name
-        const sorted = (res.data || []).sort((a, b) => 
-          (a.full_name || '').localeCompare(b.full_name || '')
-        );
-        setRecords(sorted);
+
+      // Map existing recorded students by student_code + session + date
+      const recordedMap = new Set();
+      backendRecords.forEach(r => {
+        const studentCode = r.student_code || r.student_id;
+        const sName = r.session_name || r.course_name || '';
+        const d = r.date || '';
+        recordedMap.add(`${studentCode}_${sName}_${d}`);
+        recordedMap.add(`${studentCode}_${d}`);
+      });
+
+      // Generate missing absent students for relevant sessions & enrolled students
+      const absentList = [];
+      relevantSessions.forEach(sess => {
+        const sessDate = sess.session_date || startDate;
+        const enrolled = allStudents.filter(stu => !sess.class_name || stu.class_name === sess.class_name);
+        enrolled.forEach(stu => {
+          const key1 = `${stu.student_id}_${sess.name}_${sessDate}`;
+          const key2 = `${stu.student_id}_${sessDate}`;
+          if (!recordedMap.has(key1) && !recordedMap.has(key2)) {
+            absentList.push({
+              id: `absent_${sess.id}_${stu.id}`,
+              student_id: stu.id,
+              student_code: stu.student_id,
+              full_name: stu.full_name,
+              gender: stu.gender,
+              major: stu.major || sess.major || 'Computer Science',
+              class_name: stu.class_name,
+              session_name: sess.name,
+              course_name: sess.course_name,
+              date: sessDate,
+              check_in_time: '-',
+              status: 'ABSENT',
+              check_in_method: 'SYSTEM',
+              confidence_score: null,
+              notes: 'No check-in recorded'
+            });
+            recordedMap.add(key1);
+            recordedMap.add(key2);
+          }
+        });
+      });
+
+      let combined = [...backendRecords, ...absentList];
+
+      // Apply selectedStatus filter
+      if (selectedStatus && selectedStatus !== 'ALL') {
+        combined = combined.filter(r => r.status === selectedStatus);
       }
+
+      // Apply search filter
+      if (search && search.trim()) {
+        const term = search.trim().toLowerCase();
+        combined = combined.filter(r =>
+          (r.full_name || '').toLowerCase().includes(term) ||
+          (r.student_code || r.student_id || '').toLowerCase().includes(term) ||
+          (r.session_name || '').toLowerCase().includes(term)
+        );
+      }
+
+      // Sort A to Z by full_name
+      const sorted = combined.sort((a, b) => 
+        (a.full_name || '').localeCompare(b.full_name || '')
+      );
+      setRecords(sorted);
     } catch (e) {
       console.error('Fetch reports error:', e);
     } finally {
