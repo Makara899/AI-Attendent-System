@@ -1120,56 +1120,154 @@ app.get('/api/attendance/summary', async (req, res) => {
   }
 });
 
-// 7. Attendance Reports & Export
+// 7. Attendance Reports & Export (Including Present, Late, Excused, and Absent students)
 app.get('/api/attendance/reports', async (req, res) => {
   try {
     const { start_date, end_date, major, class_name, status, search } = req.query;
 
     if (isSupabaseConfigured()) {
-      let query = supabase
+      // 1. Fetch sessions in date range
+      let sessQuery = supabase.from('sessions').select('*');
+      if (start_date) sessQuery = sessQuery.gte('session_date', start_date);
+      if (end_date) sessQuery = sessQuery.lte('session_date', end_date);
+      if (class_name && class_name !== 'ALL') sessQuery = sessQuery.eq('class_name', class_name);
+      if (major && major !== 'ALL') sessQuery = sessQuery.eq('major', major);
+      const { data: sessionsData, error: sessErr } = await sessQuery;
+      if (sessErr) throw sessErr;
+
+      // 2. Fetch all enrolled students
+      let stuQuery = supabase.from('students').select('*');
+      if (class_name && class_name !== 'ALL') stuQuery = stuQuery.eq('class_name', class_name);
+      if (major && major !== 'ALL') stuQuery = stuQuery.eq('major', major);
+      const { data: allStudents, error: stuErr } = await stuQuery;
+      if (stuErr) throw stuErr;
+
+      // 3. Fetch explicit attendance records
+      let attQuery = supabase
         .from('attendance')
-        .select('*, students(student_id, full_name, gender, major, class_name), sessions(name, course_name, major)')
+        .select('*, students(student_id, full_name, gender, major, class_name), sessions(name, course_name, major, class_name, session_date)')
         .order('date', { ascending: false })
         .order('check_in_time', { ascending: false });
 
-      if (start_date) query = query.gte('date', start_date);
-      if (end_date) query = query.lte('date', end_date);
-      if (status && status !== 'ALL') query = query.eq('status', status);
+      if (start_date) attQuery = attQuery.gte('date', start_date);
+      if (end_date) attQuery = attQuery.lte('date', end_date);
 
-      const { data, error } = await query;
-      if (error) throw error;
+      const { data: attData, error: attErr } = await attQuery;
+      if (attErr) throw attErr;
 
-      let formatted = (data || []).map(r => ({
+      const recordedList = (attData || []).map(r => ({
         ...r,
-        student_code: r.students?.student_id,
-        full_name: r.students?.full_name,
-        gender: r.students?.gender,
-        major: r.students?.major || r.sessions?.major,
-        class_name: r.students?.class_name,
-        session_name: r.sessions?.name,
-        course_name: r.sessions?.course_name
+        student_code: r.students?.student_id || r.student_code,
+        full_name: r.students?.full_name || r.full_name,
+        gender: r.students?.gender || r.gender,
+        major: r.students?.major || r.sessions?.major || r.major || 'Computer Science',
+        class_name: r.students?.class_name || r.sessions?.class_name || r.class_name,
+        session_name: r.sessions?.name || r.session_name,
+        course_name: r.sessions?.course_name || r.course_name
       }));
 
+      // Create a set of (student_id + '_' + session_id + '_' + date) to identify who already has an attendance record
+      const recordedSet = new Set();
+      recordedList.forEach(r => {
+        if (r.student_id && r.session_id && r.date) {
+          recordedSet.add(`${r.student_id}_${r.session_id}_${r.date}`);
+        }
+      });
+
+      // For every session in scope, identify enrolled students who did not check in -> mark them as ABSENT
+      const absentRecords = [];
+      (sessionsData || []).forEach(sess => {
+        const sessDate = sess.session_date;
+        const enrolled = (allStudents || []).filter(s => s.class_name === sess.class_name);
+        enrolled.forEach(stu => {
+          const key = `${stu.id}_${sess.id}_${sessDate}`;
+          if (!recordedSet.has(key)) {
+            absentRecords.push({
+              id: `absent_${sess.id}_${stu.id}`,
+              student_id: stu.id,
+              student_code: stu.student_id,
+              full_name: stu.full_name,
+              gender: stu.gender,
+              major: stu.major || sess.major || 'Computer Science',
+              class_name: stu.class_name,
+              session_id: sess.id,
+              session_name: sess.name,
+              course_name: sess.course_name,
+              date: sessDate,
+              check_in_time: '-',
+              status: 'ABSENT',
+              check_in_method: 'SYSTEM',
+              confidence_score: null,
+              notes: 'No check-in recorded'
+            });
+          }
+        });
+      });
+
+      let allResults = [...recordedList, ...absentRecords];
+
+      // Apply filters
       if (major && major !== 'ALL') {
-        formatted = formatted.filter(r => r.major === major);
+        allResults = allResults.filter(r => r.major === major);
       }
       if (class_name && class_name !== 'ALL') {
-        formatted = formatted.filter(r => r.class_name === class_name);
+        allResults = allResults.filter(r => r.class_name === class_name);
+      }
+      if (status && status !== 'ALL') {
+        allResults = allResults.filter(r => r.status === status);
       }
       if (search) {
         const term = search.toLowerCase();
-        formatted = formatted.filter(r =>
+        allResults = allResults.filter(r =>
           r.full_name?.toLowerCase().includes(term) ||
           r.student_code?.toLowerCase().includes(term) ||
-          r.session_name?.toLowerCase().includes(term)
+          r.session_name?.toLowerCase().includes(term) ||
+          r.course_name?.toLowerCase().includes(term)
         );
       }
 
-      return res.json({ success: true, data: formatted });
+      allResults.sort((a, b) => {
+        if (b.date !== a.date) return (b.date || '').localeCompare(a.date || '');
+        return (a.full_name || '').localeCompare(b.full_name || '');
+      });
+
+      return res.json({ success: true, data: allResults });
     }
 
     // Local SQLite fallback
-    let query = `
+    let sessQuery = 'SELECT * FROM sessions WHERE 1=1';
+    const sessParams = [];
+    if (start_date) {
+      sessQuery += ' AND session_date >= ?';
+      sessParams.push(start_date);
+    }
+    if (end_date) {
+      sessQuery += ' AND session_date <= ?';
+      sessParams.push(end_date);
+    }
+    if (class_name && class_name !== 'ALL') {
+      sessQuery += ' AND class_name = ?';
+      sessParams.push(class_name);
+    }
+    if (major && major !== 'ALL') {
+      sessQuery += ' AND major = ?';
+      sessParams.push(major);
+    }
+    const sessionsList = db.prepare(sessQuery).all(...sessParams);
+
+    let stuQuery = 'SELECT * FROM students WHERE 1=1';
+    const stuParams = [];
+    if (class_name && class_name !== 'ALL') {
+      stuQuery += ' AND class_name = ?';
+      stuParams.push(class_name);
+    }
+    if (major && major !== 'ALL') {
+      stuQuery += ' AND major = ?';
+      stuParams.push(major);
+    }
+    const allStudents = db.prepare(stuQuery).all(...stuParams);
+
+    let attQuery = `
       SELECT a.*, s.student_id as student_code, s.full_name, s.gender, s.major, s.class_name, 
              sess.name as session_name, sess.course_name
       FROM attendance a
@@ -1177,38 +1275,80 @@ app.get('/api/attendance/reports', async (req, res) => {
       JOIN sessions sess ON a.session_id = sess.id
       WHERE 1=1
     `;
-    const params = [];
-
+    const attParams = [];
     if (start_date) {
-      query += ' AND a.date >= ?';
-      params.push(start_date);
+      attQuery += ' AND a.date >= ?';
+      attParams.push(start_date);
     }
     if (end_date) {
-      query += ' AND a.date <= ?';
-      params.push(end_date);
+      attQuery += ' AND a.date <= ?';
+      attParams.push(end_date);
     }
+    const recordedList = db.prepare(attQuery).all(...attParams);
+
+    const recordedSet = new Set();
+    recordedList.forEach(r => {
+      if (r.student_id && r.session_id && r.date) {
+        recordedSet.add(`${r.student_id}_${r.session_id}_${r.date}`);
+      }
+    });
+
+    const absentRecords = [];
+    sessionsList.forEach(sess => {
+      const sessDate = sess.session_date;
+      const enrolled = allStudents.filter(s => s.class_name === sess.class_name);
+      enrolled.forEach(stu => {
+        const key = `${stu.id}_${sess.id}_${sessDate}`;
+        if (!recordedSet.has(key)) {
+          absentRecords.push({
+            id: `absent_${sess.id}_${stu.id}`,
+            student_id: stu.id,
+            student_code: stu.student_id,
+            full_name: stu.full_name,
+            gender: stu.gender,
+            major: stu.major || sess.major || 'Computer Science',
+            class_name: stu.class_name,
+            session_id: sess.id,
+            session_name: sess.name,
+            course_name: sess.course_name,
+            date: sessDate,
+            check_in_time: '-',
+            status: 'ABSENT',
+            check_in_method: 'SYSTEM',
+            confidence_score: null,
+            notes: 'No check-in recorded'
+          });
+        }
+      });
+    });
+
+    let allResults = [...recordedList, ...absentRecords];
+
     if (major && major !== 'ALL') {
-      query += ' AND (s.major = ? OR sess.major = ?)';
-      params.push(major, major);
+      allResults = allResults.filter(r => r.major === major);
     }
     if (class_name && class_name !== 'ALL') {
-      query += ' AND s.class_name = ?';
-      params.push(class_name);
+      allResults = allResults.filter(r => r.class_name === class_name);
     }
     if (status && status !== 'ALL') {
-      query += ' AND a.status = ?';
-      params.push(status);
+      allResults = allResults.filter(r => r.status === status);
     }
     if (search) {
-      query += ' AND (s.full_name LIKE ? OR s.student_id LIKE ? OR sess.name LIKE ?)';
-      const term = `%${search}%`;
-      params.push(term, term, term);
+      const term = search.toLowerCase();
+      allResults = allResults.filter(r =>
+        r.full_name?.toLowerCase().includes(term) ||
+        r.student_code?.toLowerCase().includes(term) ||
+        r.session_name?.toLowerCase().includes(term) ||
+        r.course_name?.toLowerCase().includes(term)
+      );
     }
 
-    query += ' ORDER BY a.date DESC, s.full_name ASC, a.check_in_time DESC';
+    allResults.sort((a, b) => {
+      if (b.date !== a.date) return (b.date || '').localeCompare(a.date || '');
+      return (a.full_name || '').localeCompare(b.full_name || '');
+    });
 
-    const records = db.prepare(query).all(...params);
-    res.json({ success: true, data: records });
+    res.json({ success: true, data: allResults });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

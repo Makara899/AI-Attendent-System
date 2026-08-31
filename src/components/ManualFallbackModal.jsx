@@ -138,6 +138,7 @@ export default function ManualFallbackModal({
                   <option value="PRESENT">{isKh ? 'វត្តមាន (PRESENT)' : 'PRESENT (On Time)'}</option>
                   <option value="LATE">{isKh ? 'មកយឺត (LATE)' : 'LATE'}</option>
                   <option value="EXCUSED">{isKh ? 'ច្បាប់ (EXCUSED)' : 'EXCUSED'}</option>
+                  <option value="ABSENT">{isKh ? 'អវត្តមាន (ABSENT)' : 'ABSENT'}</option>
                 </select>
               </div>
 

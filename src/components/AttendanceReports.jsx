@@ -76,12 +76,20 @@ export default function AttendanceReports({ activeSession, sessions = [], langua
 
   const handleExportExcel = () => {
     if (!records.length) return;
+    const presentCount = records.filter(r => r.status === 'PRESENT').length;
+    const lateCount = records.filter(r => r.status === 'LATE').length;
+    const excusedCount = records.filter(r => r.status === 'EXCUSED').length;
+    const absentCount = records.filter(r => r.status === 'ABSENT').length;
+    const totalCount = records.length;
+    const attendanceRate = totalCount > 0 ? Math.round(((presentCount + lateCount) / totalCount) * 100) : 0;
+
     exportService.exportToExcel(records, `attendance-report-${startDate}-to-${endDate}`, {
-      totalCount: records.length,
-      presentCount: records.filter(r => r.status === 'PRESENT').length,
-      lateCount: records.filter(r => r.status === 'LATE').length,
-      absentCount: 0,
-      attendanceRate: 100
+      totalCount,
+      presentCount,
+      lateCount,
+      excusedCount,
+      absentCount,
+      attendanceRate
     });
   };
 
@@ -186,6 +194,7 @@ export default function AttendanceReports({ activeSession, sessions = [], langua
                   <option value="PRESENT">{isKh ? 'វត្តមាន (Present)' : 'Present'}</option>
                   <option value="LATE">{isKh ? 'មកយឺត (Late)' : 'Late'}</option>
                   <option value="EXCUSED">{isKh ? 'សុំច្បាប់ (Excused)' : 'Excused'}</option>
+                  <option value="ABSENT">{isKh ? 'អវត្តមាន (Absent)' : 'Absent'}</option>
                 </select>
               </div>
             </div>
@@ -256,13 +265,17 @@ export default function AttendanceReports({ activeSession, sessions = [], langua
                     <td>{r.date}</td>
                     <td style={{ fontFamily: 'var(--mono)' }}>{formatDisplayTime(r.check_in_time, r.created_at)}</td>
                     <td>
-                      <span className={`pill ${r.status === 'LATE' ? 'late' : 'present'}`}>
+                      <span className={`pill ${
+                        r.status === 'LATE' ? 'late' : 
+                        (r.status === 'ABSENT' ? 'absent' : 
+                        (r.status === 'EXCUSED' ? 'excused' : 'present'))
+                      }`}>
                         {r.status}
                       </span>
                     </td>
                     <td>
-                      <span className="pill status-200" style={{ fontSize: '10.5px' }}>
-                        {r.check_in_method || 'AI_FACE'}
+                      <span className={`pill ${r.status === 'ABSENT' ? 'status-err' : 'status-200'}`} style={{ fontSize: '10.5px' }}>
+                        {r.check_in_method || (r.status === 'ABSENT' ? 'SYSTEM' : 'AI_FACE')}
                       </span>
                     </td>
                   </tr>
