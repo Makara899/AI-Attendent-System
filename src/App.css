@@ -791,6 +791,14 @@ tbody tr:hover {
   display: none;
 }
 
+.desktop-only-table {
+  display: block;
+}
+
+.mobile-only-cards {
+  display: none;
+}
+
 .tab-icon {
   margin-right: 4px;
   opacity: 0.85;
@@ -844,8 +852,15 @@ tbody tr:hover {
   }
 
   .engine-badge {
-    font-size: 10px;
+    font-size: 10.5px;
     padding: 4px 8px;
+  }
+
+  .btn-ai-help {
+    border-color: rgba(99, 102, 241, 0.35);
+    background: rgba(99, 102, 241, 0.12);
+    color: #A5B4FC;
+    font-weight: 600;
   }
 
   /* Hide top horizontal tabs on mobile in favor of bottom app bar */
@@ -853,23 +868,31 @@ tbody tr:hover {
     display: none !important;
   }
 
-  /* Sleek Modern Mobile Bottom App Bar */
+  /* Modern Floating Glassmorphic Mobile Bottom App Bar */
   .mobile-bottom-nav {
     display: flex;
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 64px;
-    background: rgba(10, 15, 28, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(63, 224, 197, 0.22);
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    height: 60px;
+    background: rgba(13, 22, 45, 0.94);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 16px;
     z-index: 1000;
-    justify-content: space-around;
     align-items: center;
-    padding: 0 2px;
-    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.55);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 15px rgba(16, 185, 129, 0.1);
+    padding: 0 4px;
+  }
+
+  .mobile-nav-inner {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: space-around;
   }
 
   .mobile-nav-btn {
@@ -880,17 +903,35 @@ tbody tr:hover {
     align-items: center;
     justify-content: center;
     gap: 3px;
-    padding: 6px 2px;
+    padding: 4px 2px;
     flex: 1;
+    height: 52px;
     color: var(--text-dim);
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 8px;
+    border-radius: 10px;
     -webkit-tap-highlight-color: transparent;
   }
 
   .mobile-nav-btn.active {
     color: var(--accent);
+    background: rgba(16, 185, 129, 0.1);
+  }
+
+  .mobile-nav-btn.highlight-btn {
+    color: var(--text);
+  }
+
+  .mobile-nav-btn.highlight-btn.active {
+    color: var(--accent);
+    background: rgba(16, 185, 129, 0.15);
+  }
+
+  .mobile-nav-btn.highlight-btn .mobile-nav-icon-wrap {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    border-radius: 8px;
+    padding: 3px 6px;
   }
 
   .mobile-nav-icon-wrap {
@@ -902,8 +943,8 @@ tbody tr:hover {
   }
 
   .mobile-nav-btn.active .mobile-nav-icon-wrap {
-    transform: translateY(-2px) scale(1.1);
-    filter: drop-shadow(0 0 8px rgba(63, 224, 197, 0.65));
+    transform: translateY(-1px) scale(1.08);
+    filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.6));
   }
 
   .mobile-live-dot {
@@ -919,13 +960,132 @@ tbody tr:hover {
   }
 
   .mobile-nav-label {
-    font-size: 10px;
+    font-size: 10.5px;
     font-weight: 600;
-    letter-spacing: 0.01em;
+    letter-spacing: -0.01em;
     white-space: nowrap;
-    text-overflow: ellipsis;
-    max-width: 50px;
+    text-align: center;
+    line-height: 1;
+  }
+
+  /* Responsive Display Rules */
+  .desktop-only-table {
+    display: none !important;
+  }
+
+  .mobile-only-cards {
+    display: block !important;
+  }
+
+  /* Mobile Student & Report Card Styling */
+  .mobile-student-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .mobile-student-card {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  }
+
+  .mobile-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .mobile-student-thumb {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 1px solid var(--line-light);
+    background: #0E172E;
+    flex-shrink: 0;
+  }
+
+  .mobile-card-meta {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .mobile-student-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #FFFFFF;
+    line-height: 1.3;
+    margin-bottom: 3px;
+    white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mobile-student-id-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mobile-id-badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    background: rgba(16, 185, 129, 0.12);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .mobile-gender-tag {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .mobile-delete-btn {
+    padding: 6px;
+  }
+
+  .mobile-card-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 8px;
+  }
+
+  .mobile-chips-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .mobile-chip-tag {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-dim);
+    background: var(--panel-3);
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  .mobile-record-num {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--accent);
+    width: 28px;
+    text-align: center;
   }
 
   /* Panels and Form Rows */

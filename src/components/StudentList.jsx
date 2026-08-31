@@ -158,66 +158,120 @@ export default function StudentList({
         {loading || isRefreshing ? (
           <TableSkeleton rows={6} cols={6} />
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table>
-              <thead>
-                <tr>
-                  <th style={{ width: '45px', textAlign: 'center' }}>{isKh ? 'ល.រ' : 'No.'}</th>
-                  <th>{isKh ? 'រូបថត' : 'Photo'}</th>
-                  <th>{isKh ? 'អត្តលេខ' : 'Student ID'}</th>
-                  <th>{isKh ? 'ឈ្មោះពេញ (A-Z)' : 'Full Name (A-Z)'}</th>
-                  <th>{isKh ? 'ជំនាញ' : 'Major'}</th>
-                  <th>{isKh ? 'ថ្នាក់' : 'Class'}</th>
-                  <th>{isKh ? 'ភេទ' : 'Gender'}</th>
-                  <th>{isKh ? 'ទិន្នន័យ AI Biometric' : 'AI Face Biometrics'}</th>
-                  <th>{isKh ? 'សកម្មភាព' : 'Action'}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
+          <>
+            {/* Desktop Table View */}
+            <div className="desktop-only-table" style={{ overflowX: 'auto' }}>
+              <table>
+                <thead>
                   <tr>
-                    <td colSpan="9" className="empty">
-                      {isKh ? 'គ្មានទិន្នន័យនិស្សិតត្រូវនឹងលក្ខខណ្ឌស្វែងរក' : 'No students match your filter.'}
-                    </td>
+                    <th style={{ width: '45px', textAlign: 'center' }}>{isKh ? 'ល.រ' : 'No.'}</th>
+                    <th>{isKh ? 'រូបថត' : 'Photo'}</th>
+                    <th>{isKh ? 'អត្តលេខ' : 'Student ID'}</th>
+                    <th>{isKh ? 'ឈ្មោះពេញ (A-Z)' : 'Full Name (A-Z)'}</th>
+                    <th>{isKh ? 'ជំនាញ' : 'Major'}</th>
+                    <th>{isKh ? 'ថ្នាក់' : 'Class'}</th>
+                    <th>{isKh ? 'ភេទ' : 'Gender'}</th>
+                    <th>{isKh ? 'ទិន្នន័យ AI Biometric' : 'AI Face Biometrics'}</th>
+                    <th>{isKh ? 'សកម្មភាព' : 'Action'}</th>
                   </tr>
-                ) : (
-                filtered.map((s, idx) => (
-                  <tr key={s.id}>
-                    <td style={{ textAlign: 'center', fontFamily: 'var(--mono)', color: 'var(--accent)' }}>
-                      <b>{idx + 1}</b>
-                    </td>
-                    <td>
-                      <img
-                        src={getMediaUrl(s.photo_url || s.photo) || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23263457"/></svg>'}
-                        alt=""
-                        className="thumb"
-                        style={{ width: '38px', height: '38px' }}
-                      />
-                    </td>
-                    <td style={{ fontFamily: 'var(--mono)' }}><b>{s.student_id}</b></td>
-                    <td><b>{s.full_name}</b></td>
-                    <td><span className="pill" style={{ background: 'var(--panel-2)', color: 'var(--text)' }}>{s.major || 'Computer Science'}</span></td>
-                    <td>{s.class_name}</td>
-                    <td>{s.gender || 'Other'}</td>
-                    <td>
-                      {s.face_descriptor ? (
-                        <span className="pill present">128-D Vector ✓</span>
-                      ) : (
-                        <span className="pill absent">No Biometric</span>
-                      )}
-                    </td>
-                    <td>
-                      <button className="btn ghost btn-sm" onClick={() => handleDelete(s.id, s.full_name)}>
-                        <Trash2 size={13} style={{ color: 'var(--danger)' }} />
-                        <span>{isKh ? 'លុប' : 'Delete'}</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan="9" className="empty">
+                        {isKh ? 'គ្មានទិន្នន័យនិស្សិតត្រូវនឹងលក្ខខណ្ឌស្វែងរក' : 'No students match your filter.'}
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.map((s, idx) => (
+                      <tr key={s.id}>
+                        <td style={{ textAlign: 'center', fontFamily: 'var(--mono)', color: 'var(--accent)' }}>
+                          <b>{idx + 1}</b>
+                        </td>
+                        <td>
+                          <img
+                            src={getMediaUrl(s.photo_url || s.photo) || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23263457"/></svg>'}
+                            alt=""
+                            className="thumb"
+                            style={{ width: '38px', height: '38px' }}
+                          />
+                        </td>
+                        <td style={{ fontFamily: 'var(--mono)' }}><b>{s.student_id}</b></td>
+                        <td><b>{s.full_name}</b></td>
+                        <td><span className="pill" style={{ background: 'var(--panel-2)', color: 'var(--text)' }}>{s.major || 'Computer Science'}</span></td>
+                        <td>{s.class_name}</td>
+                        <td>{s.gender || 'Other'}</td>
+                        <td>
+                          {s.face_descriptor ? (
+                            <span className="pill present">128-D Vector ✓</span>
+                          ) : (
+                            <span className="pill absent">No Biometric</span>
+                          )}
+                        </td>
+                        <td>
+                          <button className="btn ghost btn-sm" onClick={() => handleDelete(s.id, s.full_name)}>
+                            <Trash2 size={13} style={{ color: 'var(--danger)' }} />
+                            <span>{isKh ? 'លុប' : 'Delete'}</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card List View (No horizontal scrolling!) */}
+            <div className="mobile-only-cards">
+              {filtered.length === 0 ? (
+                <div className="empty">
+                  {isKh ? 'គ្មានទិន្នន័យនិស្សិតត្រូវនឹងលក្ខខណ្ឌស្វែងរក' : 'No students match your filter.'}
+                </div>
+              ) : (
+                <div className="mobile-student-list">
+                  {filtered.map((s, idx) => (
+                    <div key={s.id} className="mobile-student-card">
+                      <div className="mobile-card-header">
+                        <img
+                          src={getMediaUrl(s.photo_url || s.photo) || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%23263457"/></svg>'}
+                          alt=""
+                          className="mobile-student-thumb"
+                        />
+                        <div className="mobile-card-meta">
+                          <div className="mobile-student-name">{s.full_name}</div>
+                          <div className="mobile-student-id-row">
+                            <span className="mobile-id-badge">{s.student_id}</span>
+                            <span className="mobile-gender-tag">{s.gender || 'Other'}</span>
+                          </div>
+                        </div>
+                        <button 
+                          className="btn ghost btn-icon btn-sm mobile-delete-btn" 
+                          onClick={() => handleDelete(s.id, s.full_name)}
+                          title="Delete"
+                        >
+                          <Trash2 size={15} className="text-danger" />
+                        </button>
+                      </div>
+
+                      <div className="mobile-card-body">
+                        <div className="mobile-chips-row">
+                          <span className="mobile-chip-tag">📚 {s.major || 'Computer Science'}</span>
+                          <span className="mobile-chip-tag">👥 {s.class_name}</span>
+                        </div>
+                        <div className="mobile-biometric-status">
+                          {s.face_descriptor ? (
+                            <span className="pill present">AI Face Vector (128-D) ✓</span>
+                          ) : (
+                            <span className="pill absent">No Biometric</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
-              </tbody>
-            </table>
-          </div>
+            </div>
+          </>
         )}
       </div>
     </div>
