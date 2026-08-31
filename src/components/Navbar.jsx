@@ -29,15 +29,23 @@ export default function Navbar({
 }) {
   const isKh = language === 'kh';
 
-  // 6 Clean core navigation items (AI Help moved to top header beside Settings)
   const navItems = [
-    { id: 'scanner', num: '1', labelKh: 'ស្កេន AI', fullKh: 'ស្កេនវត្តមាន', labelEn: 'Scan', fullEn: 'Live AI Scan', live: true, icon: Camera, highlight: true },
-    { id: 'attendance', num: '2', labelKh: 'វត្តមាន', fullKh: 'វត្តមានសរុប', labelEn: 'Attendance', fullEn: 'Attendance', icon: CheckCircle2 },
-    { id: 'students', num: '3', labelKh: 'និស្សិត', fullKh: 'បញ្ជីនិស្សិត', labelEn: 'Students', fullEn: 'All Students', icon: Users },
+    { id: 'register', num: '1', labelKh: 'ចុះឈ្មោះ', fullKh: 'ចុះឈ្មោះនិស្សិត', labelEn: 'Register', fullEn: 'Register Student', icon: UserPlus },
+    { id: 'scanner', num: '2', labelKh: 'ស្កេន AI', fullKh: 'ស្កេនវត្តមាន', labelEn: 'Live Scan', fullEn: 'Live AI Scan', live: true, icon: Camera },
+    { id: 'attendance', num: '3', labelKh: 'វត្តមាន', fullKh: 'Present / Absent', labelEn: 'Attendance', fullEn: 'Present / Absent', icon: CheckCircle2 },
     { id: 'reports', num: '4', labelKh: 'របាយការណ៍', fullKh: 'របាយការណ៍', labelEn: 'Reports', fullEn: 'Reports & Export', icon: BarChart3 },
-    { id: 'sessions', num: '5', labelKh: 'Sessions', fullKh: 'Sessions', labelEn: 'Sessions', fullEn: 'Session Manager', icon: CalendarDays },
-    { id: 'register', num: '6', labelKh: 'ចុះឈ្មោះ', fullKh: 'ចុះឈ្មោះ', labelEn: 'Register', fullEn: 'Register Student', icon: UserPlus },
+    { id: 'sessions', num: '5', labelKh: 'Sessions', fullKh: 'គ្រប់គ្រង Sessions', labelEn: 'Sessions', fullEn: 'Session Manager', icon: CalendarDays },
+    { id: 'students', num: '6', labelKh: 'និស្សិត', fullKh: 'បញ្ជីនិស្សិត', labelEn: 'Students', fullEn: 'All Students', icon: Users },
+    { id: 'fallback', num: '7', labelKh: 'AI Help', fullKh: 'ករណីមិនស្គាល់មុខ', labelEn: 'AI Help', fullEn: 'AI Diagnostics', icon: Sparkles },
   ];
+
+  const handleTabClick = (id) => {
+    if (id === 'fallback') {
+      onOpenAIHelp();
+    } else {
+      setActiveTab(id);
+    }
+  };
 
   return (
     <>
@@ -83,31 +91,21 @@ export default function Navbar({
                 ) : (
                   <Loader2 size={12} className="spin-icon text-warn" />
                 )}
-                <span>{aiReady ? (detectorType === 'tiny' ? 'TINY DETECTOR' : 'SMART ENGINE') : (isKh ? 'ដំណើរការ AI...' : 'LOADING AI...')}</span>
+                <span>{aiReady ? (detectorType === 'tiny' ? 'TINY DETECTOR' : 'SMART ENGINE') : (isKh ? 'កំពុងដំណើរការ AI...' : 'LOADING AI...')}</span>
               </div>
-
-              {/* AI Help Button beside Settings */}
-              <button
-                className="btn ghost btn-sm btn-ai-help"
-                onClick={onOpenAIHelp}
-                title={isKh ? 'ជំនួយ AI & ការវិនិច្ឆ័យ (AI Help)' : 'AI Help & Diagnostics'}
-              >
-                <Sparkles size={14} className="text-primary" />
-                <span className="header-btn-text">AI Help</span>
-              </button>
 
               {/* Language Switcher */}
               <button
-                className="btn ghost btn-sm btn-lang-switch"
+                className="btn ghost btn-sm"
                 onClick={() => setLanguage(isKh ? 'en' : 'kh')}
                 title="Switch Language"
               >
-                <span>{isKh ? '🇰🇭 ខ្មែរ' : '🇺🇸 EN'}</span>
+                {isKh ? '🇰🇭 ខ្មែរ' : '🇺🇸 EN'}
               </button>
 
               {/* Settings */}
               <button 
-                className="btn ghost btn-icon btn-sm btn-settings"
+                className="btn ghost btn-icon btn-sm"
                 onClick={onOpenSettings}
                 title={isKh ? 'ការកំណត់ AI & System' : 'Settings'}
               >
@@ -125,7 +123,7 @@ export default function Navbar({
                 <button
                   key={item.id}
                   className={isActive ? 'active' : ''}
-                  onClick={() => setActiveTab(item.id)}
+                  onClick={() => handleTabClick(item.id)}
                 >
                   {Icon && <Icon size={14} className="tab-icon" />}
                   <span>{item.num}. {isKh ? item.fullKh : item.fullEn}</span>
@@ -139,28 +137,24 @@ export default function Navbar({
 
       {/* Mobile Bottom App Navigation Bar */}
       <nav className="mobile-bottom-nav" aria-label="Mobile Navigation">
-        <div className="mobile-nav-inner">
-          {navItems.map((item) => {
-            const isActive = activeTab === item.id;
-            const Icon = item.icon;
-            const isHighlight = item.highlight;
-
-            return (
-              <button
-                key={item.id}
-                className={`mobile-nav-btn ${isActive ? 'active' : ''} ${isHighlight ? 'highlight-btn' : ''}`}
-                onClick={() => setActiveTab(item.id)}
-                aria-label={isKh ? item.fullKh : item.fullEn}
-              >
-                <div className="mobile-nav-icon-wrap">
-                  {Icon && <Icon size={isHighlight ? 20 : 18} />}
-                  {item.live && <span className="mobile-live-dot"></span>}
-                </div>
-                <span className="mobile-nav-label">{isKh ? item.labelKh : item.labelEn}</span>
-              </button>
-            );
-          })}
-        </div>
+        {navItems.map((item) => {
+          const isActive = activeTab === item.id;
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.id}
+              className={`mobile-nav-btn ${isActive ? 'active' : ''}`}
+              onClick={() => handleTabClick(item.id)}
+              aria-label={isKh ? item.fullKh : item.fullEn}
+            >
+              <div className="mobile-nav-icon-wrap">
+                {Icon && <Icon size={19} />}
+                {item.live && <span className="mobile-live-dot"></span>}
+              </div>
+              <span className="mobile-nav-label">{isKh ? item.labelKh : item.labelEn}</span>
+            </button>
+          );
+        })}
       </nav>
     </>
   );

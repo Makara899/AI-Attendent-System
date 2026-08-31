@@ -1,3 +1,4 @@
+import React from 'react';
 import { 
   Users, 
   UserCheck, 
@@ -12,8 +13,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   GraduationCap,
-  Percent,
-  FileText
+  Percent
 } from 'lucide-react';
 import { getMediaUrl, formatDisplayTime } from '../services/api';
 import { DashboardSkeleton } from './SkeletonLoader';
@@ -37,14 +37,12 @@ export default function AttendanceDashboard({
     totalCount: 0,
     presentCount: 0,
     lateCount: 0,
-    excusedCount: 0,
     absentCount: 0,
     attendanceRate: 0
   };
 
   const presentList = summaryData?.presentList || [];
   const lateList = summaryData?.lateList || [];
-  const excusedList = summaryData?.excusedList || [];
   const absentList = summaryData?.absentList || [];
 
   return (
@@ -116,19 +114,7 @@ export default function AttendanceDashboard({
           </div>
         </div>
 
-        {/* 4. Excused / Leave Count */}
-        <div className="kpi-card excused">
-          <div className="kpi-icon-box" style={{ background: 'rgba(168, 85, 247, 0.12)', color: '#C084FC' }}>
-            <FileText size={22} />
-          </div>
-          <div className="kpi-info">
-            <span className="kpi-label">{isKh ? 'សុំច្បាប់ (Excused)' : 'Excused / Leave'}</span>
-            <h3 className="kpi-value" style={{ color: '#C084FC' }}>{stats.excusedCount || 0}</h3>
-            <span className="kpi-subtext">{isKh ? 'មានការអនុញ្ញាត' : 'Approved leave'}</span>
-          </div>
-        </div>
-
-        {/* 5. Absent Count */}
+        {/* 4. Absent Count */}
         <div className="kpi-card absent">
           <div className="kpi-icon-box">
             <UserX size={22} />
@@ -140,7 +126,7 @@ export default function AttendanceDashboard({
           </div>
         </div>
 
-        {/* 6. Attendance Rate with Circular SVG Progress Ring */}
+        {/* 5. Attendance Rate with Circular SVG Progress Ring */}
         <div className="kpi-card rate">
           <div className="circular-progress-wrap">
             <svg viewBox="0 0 36 36" className="circular-chart">
@@ -156,7 +142,7 @@ export default function AttendanceDashboard({
             <div className="kpi-info" style={{ flex: 1 }}>
               <span className="kpi-label">{isKh ? 'អត្រាវត្តមានសរុប' : 'Attendance Rate'}</span>
               <h3 className="kpi-value text-primary">{stats.attendanceRate}%</h3>
-              <span className="kpi-subtext">{(stats.presentCount || 0) + (stats.lateCount || 0) + (stats.excusedCount || 0)} of {stats.totalCount} present</span>
+              <span className="kpi-subtext">{stats.presentCount} of {stats.totalCount} present</span>
             </div>
           </div>
         </div>
@@ -164,12 +150,12 @@ export default function AttendanceDashboard({
 
       {/* Split Cards: Recent Present vs Missing Absent */}
       <div className="dashboard-split-grid">
-        {/* Present, Late & Excused Students Card */}
+        {/* Present & Late Students Card */}
         <div className="card split-card">
           <div className="card-header flex-between">
             <div className="header-title">
               <CheckCircle2 size={19} className="text-success" />
-              <h3>{isKh ? 'និស្សិតដែលបានកត់ត្រាវត្តមាន' : 'Recorded Students'} ({presentList.length + lateList.length + excusedList.length})</h3>
+              <h3>{isKh ? 'និស្សិតដែលមានវត្តមាន' : 'Checked-In Students'} ({presentList.length + lateList.length})</h3>
             </div>
             <button className="btn btn-ghost btn-sm" onClick={() => onNavigateTab('attendance')}>
               <span>{isKh ? 'មើលទាំងអស់' : 'View All'}</span> <ArrowRight size={14} />
@@ -177,12 +163,12 @@ export default function AttendanceDashboard({
           </div>
 
           <div className="card-body scrollable-list">
-            {[...presentList, ...lateList, ...excusedList].length === 0 ? (
+            {[...presentList, ...lateList].length === 0 ? (
               <div className="empty-state-sm">
                 <p>{isKh ? 'មិនទាន់មាននិស្សិតចុះវត្តមាននៅឡើយ' : 'No students checked in yet'}</p>
               </div>
             ) : (
-              [...presentList, ...lateList, ...excusedList].slice(0, 8).map((item) => (
+              [...presentList, ...lateList].slice(0, 6).map((item) => (
                 <div key={item.id} className="mini-student-row">
                   <div className="mini-avatar">
                     {item.snapshot_url || item.profile_photo ? (
@@ -200,7 +186,7 @@ export default function AttendanceDashboard({
                     <span className="mini-sub">{item.student_code} • ⏱ {formatDisplayTime(item.check_in_time, item.created_at)}</span>
                   </div>
                   <div className="mini-badge">
-                    <span className={`status-pill-sm ${item.status === 'LATE' ? 'late' : item.status === 'EXCUSED' ? 'excused' : 'present'}`}>
+                    <span className={`status-pill-sm ${item.status === 'LATE' ? 'late' : 'present'}`}>
                       {item.status}
                     </span>
                   </div>

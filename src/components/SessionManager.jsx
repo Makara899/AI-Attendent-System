@@ -280,9 +280,7 @@ export default function SessionManager({
       {/* Panel 2: Existing Sessions List */}
       <div className="panel">
         <h2>{isKh ? `បញ្ជី Session ទាំងអស់ក្នុងប្រព័ន្ធ (${sessions.length})` : `All Scheduled Sessions (${sessions.length})`}</h2>
-        
-        {/* Desktop Table View */}
-        <div className="desktop-only-table" style={{ overflowX: 'auto' }}>
+        <div style={{ overflowX: 'auto' }}>
           <table>
             <thead>
               <tr>
@@ -348,57 +346,6 @@ export default function SessionManager({
               )}
             </tbody>
           </table>
-        </div>
-
-        {/* Mobile Session Cards */}
-        <div className="mobile-only-cards">
-          {sessions.length === 0 ? (
-            <div className="empty">{isKh ? 'មិនទាន់មាន Session ទេ' : 'No sessions created yet.'}</div>
-          ) : (
-            <div className="mobile-student-list">
-              {sessions.map((s, idx) => {
-                const isActive = s.id === activeSessionId;
-                return (
-                  <div key={s.id} className="mobile-student-card">
-                    <div className="mobile-card-header">
-                      <div className="mobile-record-num">#{idx + 1}</div>
-                      <div className="mobile-card-meta">
-                        <div className="mobile-student-name">{s.name}</div>
-                        <div className="mobile-student-id-row">
-                          <span className="mobile-id-badge">{s.course_name}</span>
-                          <span className="mobile-gender-tag">{s.class_name}</span>
-                        </div>
-                      </div>
-                      {isActive ? (
-                        <span className="pill present">ACTIVE</span>
-                      ) : (
-                        <button className="btn ghost btn-xs" onClick={() => setActiveSessionId(s.id)}>
-                          {isKh ? 'ជ្រើសរើស' : 'Select'}
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="mobile-card-body">
-                      <div className="mobile-chips-row">
-                        <span className="mobile-chip-tag">📅 {s.session_date}</span>
-                        <span className="mobile-chip-tag">⏱ {s.start_time} - {s.end_time}</span>
-                        <span className="mobile-chip-tag">🚪 {s.room || 'Room 101'}</span>
-                        <span className="mobile-chip-tag">👨‍🏫 {s.lecturer || 'Professor'}</span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <button className="btn ghost btn-sm btn-icon" onClick={() => startEdit(s)} title="Edit">
-                          <Edit2 size={14} />
-                        </button>
-                        <button className="btn ghost btn-sm btn-icon" onClick={() => handleDelete(s.id, s.name)} title="Delete">
-                          <Trash2 size={14} className="text-danger" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </div>
       </div>
     </div>

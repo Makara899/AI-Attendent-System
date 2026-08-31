@@ -185,7 +185,6 @@ export default function AttendanceReports({ activeSession, sessions = [], langua
                   <option value="ALL">{isKh ? 'ទាំងអស់ (All)' : 'All'}</option>
                   <option value="PRESENT">{isKh ? 'វត្តមាន (Present)' : 'Present'}</option>
                   <option value="LATE">{isKh ? 'មកយឺត (Late)' : 'Late'}</option>
-                  <option value="EXCUSED">{isKh ? 'សុំច្បាប់ (Excused)' : 'Excused'}</option>
                 </select>
               </div>
             </div>
@@ -219,98 +218,58 @@ export default function AttendanceReports({ activeSession, sessions = [], langua
         {loading ? (
           <TableSkeleton rows={7} cols={8} />
         ) : (
-          <>
-            {/* Desktop Table */}
-            <div className="desktop-only-table" style={{ overflowX: 'auto' }}>
-              <table>
-                <thead>
+          <div style={{ overflowX: 'auto' }}>
+            <table>
+              <thead>
+                <tr>
+                  <th style={{ width: '45px', textAlign: 'center' }}>{isKh ? 'ល.រ' : 'No.'}</th>
+                  <th>{isKh ? 'អត្តលេខ' : 'Student ID'}</th>
+                  <th>{isKh ? 'ឈ្មោះនិស្សិត (A-Z)' : 'Full Name (A-Z)'}</th>
+                  <th>{isKh ? 'ជំនាញ' : 'Major'}</th>
+                  <th>{isKh ? 'ថ្នាក់' : 'Class'}</th>
+                  <th>Session</th>
+                  <th>{isKh ? 'កាលបរិច្ឆេទ' : 'Date'}</th>
+                  <th>{isKh ? 'ម៉ោង' : 'Time'}</th>
+                  <th>{isKh ? 'ស្ថានភាព' : 'Status'}</th>
+                  <th>{isKh ? 'វិធីសាស្ត្រ' : 'Method'}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {records.length === 0 ? (
                   <tr>
-                    <th style={{ width: '45px', textAlign: 'center' }}>{isKh ? 'ល.រ' : 'No.'}</th>
-                    <th>{isKh ? 'អត្តលេខ' : 'Student ID'}</th>
-                    <th>{isKh ? 'ឈ្មោះនិស្សិត (A-Z)' : 'Full Name (A-Z)'}</th>
-                    <th>{isKh ? 'ជំនាញ' : 'Major'}</th>
-                    <th>{isKh ? 'ថ្នាក់' : 'Class'}</th>
-                    <th>Session</th>
-                    <th>{isKh ? 'កាលបរិច្ឆេទ' : 'Date'}</th>
-                    <th>{isKh ? 'ម៉ោង' : 'Time'}</th>
-                    <th>{isKh ? 'ស្ថានភាព' : 'Status'}</th>
-                    <th>{isKh ? 'វិធីសាស្ត្រ' : 'Method'}</th>
+                    <td colSpan="10" className="empty">
+                      {isKh ? 'គ្មានទិន្នន័យត្រូវនឹងលក្ខខណ្ឌស្វែងរក' : 'No records found for the selected filter.'}
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {records.length === 0 ? (
-                    <tr>
-                      <td colSpan="10" className="empty">
-                        {isKh ? 'គ្មានទិន្នន័យត្រូវនឹងលក្ខខណ្ឌស្វែងរក' : 'No records found for the selected filter.'}
-                      </td>
-                    </tr>
-                  ) : (
-                    records.map((r, idx) => (
-                      <tr key={r.id || idx}>
-                        <td style={{ textAlign: 'center', fontFamily: 'var(--mono)', color: 'var(--accent)' }}>
-                          <b>{idx + 1}</b>
-                        </td>
-                        <td style={{ fontFamily: 'var(--mono)', fontSize: '12px' }}><b>{r.student_code || r.student_id}</b></td>
-                        <td><b>{r.full_name}</b></td>
-                        <td><span className="pill" style={{ background: 'var(--panel-2)', color: 'var(--text)' }}>{r.major || 'Computer Science'}</span></td>
-                        <td>{r.class_name}</td>
-                        <td>{r.session_name || r.course_name || 'Class Session'}</td>
-                        <td>{r.date}</td>
-                        <td style={{ fontFamily: 'var(--mono)' }}>{formatDisplayTime(r.check_in_time, r.created_at)}</td>
-                        <td>
-                          <span className={`pill ${r.status === 'LATE' ? 'late' : 'present'}`}>
-                            {r.status}
-                          </span>
-                        </td>
-                        <td>
-                          <span className="pill status-200" style={{ fontSize: '10.5px' }}>
-                            {r.check_in_method || 'AI_FACE'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Report Cards */}
-            <div className="mobile-only-cards">
-              {records.length === 0 ? (
-                <div className="empty">
-                  {isKh ? 'គ្មានទិន្នន័យត្រូវនឹងលក្ខខណ្ឌស្វែងរក' : 'No records found for the selected filter.'}
-                </div>
-              ) : (
-                <div className="mobile-student-list">
-                  {records.map((r, idx) => (
-                    <div key={r.id || idx} className="mobile-student-card">
-                      <div className="mobile-card-header">
-                        <div className="mobile-record-num">#{idx + 1}</div>
-                        <div className="mobile-card-meta">
-                          <div className="mobile-student-name">{r.full_name}</div>
-                          <div className="mobile-student-id-row">
-                            <span className="mobile-id-badge">{r.student_code || r.student_id}</span>
-                            <span className="mobile-gender-tag">{r.class_name}</span>
-                          </div>
-                        </div>
-                        <span className={`pill ${r.status === 'LATE' ? 'late' : 'present'}`}>
-                          {r.status}
-                        </span>
-                      </div>
-
-                      <div className="mobile-card-body">
-                        <div className="mobile-chips-row">
-                          <span className="mobile-chip-tag">📅 {r.date}</span>
-                          <span className="mobile-chip-tag">⏱ {formatDisplayTime(r.check_in_time, r.created_at)}</span>
-                          <span className="mobile-chip-tag">⚡ {r.check_in_method || 'AI_FACE'}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                ) : (
+                records.map((r, idx) => (
+                  <tr key={r.id || idx}>
+                    <td style={{ textAlign: 'center', fontFamily: 'var(--mono)', color: 'var(--accent)' }}>
+                      <b>{idx + 1}</b>
+                    </td>
+                    <td style={{ fontFamily: 'var(--mono)', fontSize: '12px' }}><b>{r.student_code || r.student_id}</b></td>
+                    <td><b>{r.full_name}</b></td>
+                    <td><span className="pill" style={{ background: 'var(--panel-2)', color: 'var(--text)' }}>{r.major || 'Computer Science'}</span></td>
+                    <td>{r.class_name}</td>
+                    <td>{r.session_name || r.course_name || 'Class Session'}</td>
+                    <td>{r.date}</td>
+                    <td style={{ fontFamily: 'var(--mono)' }}>{formatDisplayTime(r.check_in_time, r.created_at)}</td>
+                    <td>
+                      <span className={`pill ${r.status === 'LATE' ? 'late' : 'present'}`}>
+                        {r.status}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="pill status-200" style={{ fontSize: '10.5px' }}>
+                        {r.check_in_method || 'AI_FACE'}
+                      </span>
+                    </td>
+                  </tr>
+                ))
               )}
-            </div>
-          </>
+            </tbody>
+          </table>
+        </div>
         )}
       </div>
     </div>
