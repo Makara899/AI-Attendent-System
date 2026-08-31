@@ -36,15 +36,10 @@ export default function Navbar({
     { id: 'reports', num: '4', labelKh: 'របាយការណ៍', fullKh: 'របាយការណ៍', labelEn: 'Reports', fullEn: 'Reports & Export', icon: BarChart3 },
     { id: 'sessions', num: '5', labelKh: 'Sessions', fullKh: 'គ្រប់គ្រង Sessions', labelEn: 'Sessions', fullEn: 'Session Manager', icon: CalendarDays },
     { id: 'students', num: '6', labelKh: 'និស្សិត', fullKh: 'បញ្ជីនិស្សិត', labelEn: 'Students', fullEn: 'All Students', icon: Users },
-    { id: 'fallback', num: '7', labelKh: 'AI Help', fullKh: 'ករណីមិនស្គាល់មុខ', labelEn: 'AI Help', fullEn: 'AI Diagnostics', icon: Sparkles },
   ];
 
   const handleTabClick = (id) => {
-    if (id === 'fallback') {
-      onOpenAIHelp();
-    } else {
-      setActiveTab(id);
-    }
+    setActiveTab(id);
   };
 
   return (
@@ -93,6 +88,16 @@ export default function Navbar({
                 )}
                 <span>{aiReady ? (detectorType === 'tiny' ? 'TINY DETECTOR' : 'SMART ENGINE') : (isKh ? 'កំពុងដំណើរការ AI...' : 'LOADING AI...')}</span>
               </div>
+
+              {/* AI Help Button (Near Settings) */}
+              <button
+                className="btn ghost btn-sm btn-ai-help"
+                onClick={onOpenAIHelp}
+                title={isKh ? 'ការពន្យល់អំពី AI & ជំនួយ' : 'AI Help & Guide'}
+              >
+                <Sparkles size={14} style={{ color: 'var(--accent)' }} />
+                <span>AI Help</span>
+              </button>
 
               {/* Language Switcher */}
               <button

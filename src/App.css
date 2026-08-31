@@ -84,6 +84,7 @@ header.top-header {
 /* Universal Equal Height & Alignment (36px) for All Header Items */
 .header-controls .session-picker,
 .header-controls .engine-badge,
+.header-controls .btn-ai-help,
 .header-controls .btn-lang-switch,
 .header-controls .btn-settings,
 .header-controls button.btn {
