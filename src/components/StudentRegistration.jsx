@@ -65,15 +65,48 @@ export default function StudentRegistration({
   const startCamera = async () => {
     try {
       setCapturedImage(null);
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 640, height: 480, facingMode: 'user' }
-      });
+
+      const getStream = async () => {
+        try {
+          return await navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+            audio: false
+          });
+        } catch (e1) {
+          try {
+            return await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: 'user' },
+              audio: false
+            });
+          } catch (e2) {
+            return await navigator.mediaDevices.getUserMedia({
+              video: true,
+              audio: false
+            });
+          }
+        }
+      };
+
+      const stream = await getStream();
       streamRef.current = stream;
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+        const video = videoRef.current;
+        video.srcObject = stream;
+        video.setAttribute('playsinline', 'true');
+        video.setAttribute('webkit-playsinline', 'true');
+        video.setAttribute('autoplay', 'true');
+        video.muted = true;
         try {
-          await videoRef.current.play();
-        } catch(e) {}
+          await video.play();
+        } catch(e) {
+          const retryPlay = () => {
+            if (videoRef.current) videoRef.current.play().catch(() => {});
+            document.removeEventListener('touchstart', retryPlay);
+            document.removeEventListener('click', retryPlay);
+          };
+          document.addEventListener('touchstart', retryPlay, { once: true, passive: true });
+          document.addEventListener('click', retryPlay, { once: true, passive: true });
+        }
       }
       setCameraActive(true);
     } catch (err) {
@@ -359,6 +392,7 @@ export default function StudentRegistration({
                 ref={videoRef}
                 autoPlay
                 playsInline
+                webkit-playsinline="true"
                 muted
                 style={{
                   width: '100%',

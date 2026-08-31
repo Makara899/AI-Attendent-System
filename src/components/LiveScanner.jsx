@@ -58,49 +58,100 @@ export default function LiveScanner({
     soundService.unlockAudio();
     setCameraLoading(true);
     setCameraError(null);
+
+    const getStreamWithFallbacks = async () => {
+      // 1. Mobile & Web Ideal facingMode + standard resolution
+      try {
+        return await navigator.mediaDevices.getUserMedia({
+          video: { 
+            facingMode: mode ? { ideal: mode } : 'user',
+            width: { ideal: 640 }, 
+            height: { ideal: 480 } 
+          },
+          audio: false
+        });
+      } catch (e1) {
+        console.warn('Camera tier 1 fallback:', e1);
+      }
+
+      // 2. Fallback: exact/ideal facingMode only
+      try {
+        return await navigator.mediaDevices.getUserMedia({
+          video: { 
+            facingMode: mode ? mode : 'user'
+          },
+          audio: false
+        });
+      } catch (e2) {
+        console.warn('Camera tier 2 fallback:', e2);
+      }
+
+      // 3. Fallback: generic video stream
+      return await navigator.mediaDevices.getUserMedia({ 
+        video: true, 
+        audio: false 
+      });
+    };
+
     try {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(t => t.stop());
         streamRef.current = null;
       }
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { 
-          width: { ideal: 640 }, 
-          height: { ideal: 480 }, 
-          facingMode: mode ? { ideal: mode } : 'user' 
-        },
-        audio: false
-      });
+
+      const stream = await getStreamWithFallbacks();
 
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+        const video = videoRef.current;
+        video.srcObject = stream;
         streamRef.current = stream;
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current.play();
+
+        // Ensure mobile inline auto-play permissions
+        video.setAttribute('playsinline', 'true');
+        video.setAttribute('webkit-playsinline', 'true');
+        video.setAttribute('autoplay', 'true');
+        video.muted = true;
+
+        const onReady = async () => {
+          try {
+            await video.play();
+          } catch (playErr) {
+            console.warn('Browser paused autoplay, attaching auto-resume on interaction:', playErr);
+            const resumePlay = () => {
+              if (videoRef.current) {
+                videoRef.current.play().catch(e => console.warn('Resume play error:', e));
+              }
+              document.removeEventListener('touchstart', resumePlay);
+              document.removeEventListener('click', resumePlay);
+            };
+            document.addEventListener('touchstart', resumePlay, { once: true, passive: true });
+            document.addEventListener('click', resumePlay, { once: true, passive: true });
+          }
           setIsCameraActive(true);
           setCameraLoading(false);
           startRecognitionLoop();
         };
+
+        if (video.readyState >= 2) {
+          onReady();
+        } else {
+          video.onloadedmetadata = onReady;
+        }
       }
     } catch (err) {
       console.error('Camera Access Error:', err);
-      try {
-        const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        if (videoRef.current) {
-          videoRef.current.srcObject = fallbackStream;
-          streamRef.current = fallbackStream;
-          videoRef.current.onloadedmetadata = () => {
-            videoRef.current.play();
-            setIsCameraActive(true);
-            setCameraLoading(false);
-            startRecognitionLoop();
-          };
-        }
-      } catch (fallbackErr) {
-        setCameraError(err.message || 'Cannot access camera.');
-        setCameraLoading(false);
-        setIsCameraActive(false);
-      }
+      setCameraError(err.message || 'Cannot access camera. Please check device permissions.');
+      setCameraLoading(false);
+      setIsCameraActive(false);
+
+      // Auto-retry on first screen tap if phone browser blocked initial auto-access
+      const retryOnTap = () => {
+        startCamera(mode);
+        document.removeEventListener('touchstart', retryOnTap);
+        document.removeEventListener('click', retryOnTap);
+      };
+      document.addEventListener('touchstart', retryOnTap, { once: true, passive: true });
+      document.addEventListener('click', retryOnTap, { once: true, passive: true });
     }
   };
 
@@ -309,7 +360,13 @@ export default function LiveScanner({
 
         <div style={{ textAlign: 'center', position: 'relative' }}>
           <div className={`cam-frame ${isCameraActive ? 'scanning' : ''}`}>
-            <video ref={videoRef} playsInline muted autoPlay />
+            <video 
+              ref={videoRef} 
+              playsInline 
+              webkit-playsinline="true"
+              muted 
+              autoPlay 
+            />
             <canvas ref={canvasRef} className="cam-overlay-canvas" />
             
             {/* Viewfinder Brackets */}
