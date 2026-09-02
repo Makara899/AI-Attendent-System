@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Trash2, UserPlus, RefreshCw } from 'lucide-react';
+import { Search, Trash2, UserPlus, RefreshCw, Edit3 } from 'lucide-react';
 import { api, getMediaUrl } from '../services/api';
 import { TableSkeleton } from './SkeletonLoader';
+import EditStudentModal from './EditStudentModal';
 
 export default function StudentList({
   students,
@@ -17,6 +18,7 @@ export default function StudentList({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedMajor, setSelectedMajor] = useState(activeSession?.major || 'ALL');
   const [selectedClass, setSelectedClass] = useState(activeSession?.class_name || 'ALL');
+  const [editingStudent, setEditingStudent] = useState(null);
 
   const handleRefreshClick = async () => {
     setIsRefreshing(true);
@@ -207,10 +209,26 @@ export default function StudentList({
                       )}
                     </td>
                     <td>
-                      <button className="btn ghost btn-sm" onClick={() => handleDelete(s.id, s.full_name)}>
-                        <Trash2 size={13} style={{ color: 'var(--danger)' }} />
-                        <span>{isKh ? 'លុប' : 'Delete'}</span>
-                      </button>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        <button 
+                          className="btn ghost btn-sm" 
+                          style={{ color: 'var(--primary, #00f2fe)' }}
+                          onClick={() => setEditingStudent(s)}
+                          title={isKh ? 'កែប្រែទិន្នន័យ' : 'Update / Edit'}
+                        >
+                          <Edit3 size={13} />
+                          <span>{isKh ? 'កែប្រែ' : 'Update'}</span>
+                        </button>
+                        <button 
+                          className="btn ghost btn-sm" 
+                          style={{ color: 'var(--danger, #ff4d4f)' }}
+                          onClick={() => handleDelete(s.id, s.full_name)}
+                          title={isKh ? 'លុប' : 'Delete'}
+                        >
+                          <Trash2 size={13} />
+                          <span>{isKh ? 'លុប' : 'Delete'}</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -220,6 +238,21 @@ export default function StudentList({
           </div>
         )}
       </div>
+
+      {/* Edit / Update Student Modal */}
+      {editingStudent && (
+        <EditStudentModal
+          isOpen={Boolean(editingStudent)}
+          student={editingStudent}
+          onClose={() => setEditingStudent(null)}
+          onSuccess={() => {
+            setEditingStudent(null);
+            if (onRefresh) onRefresh();
+          }}
+          language={language}
+          sessions={sessions}
+        />
+      )}
     </div>
   );
 }

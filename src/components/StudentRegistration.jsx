@@ -5,10 +5,12 @@ import {
   Upload, 
   Trash2,
   CheckCircle2,
-  Loader2
+  Loader2,
+  Edit3
 } from 'lucide-react';
 import { faceService } from '../services/faceService';
 import { api, getMediaUrl } from '../services/api';
+import EditStudentModal from './EditStudentModal';
 
 export default function StudentRegistration({ 
   onStudentAdded, 
@@ -36,6 +38,7 @@ export default function StudentRegistration({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formFeedback, setFormFeedback] = useState(null);
   const [registeredStudents, setRegisteredStudents] = useState([]);
+  const [editingStudent, setEditingStudent] = useState(null);
 
   // Webcam references
   const videoRef = useRef(null);
@@ -562,9 +565,24 @@ export default function StudentRegistration({
                       )}
                     </td>
                     <td>
-                      <button className="btn ghost btn-sm" onClick={() => handleDeleteStudent(s.id)}>
-                        <Trash2 size={13} style={{ color: 'var(--danger)' }} />
-                      </button>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        <button
+                          className="btn ghost btn-sm"
+                          style={{ color: 'var(--primary, #00f2fe)' }}
+                          onClick={() => setEditingStudent(s)}
+                          title={isKh ? 'កែប្រែទិន្នន័យ' : 'Edit Student'}
+                        >
+                          <Edit3 size={13} />
+                        </button>
+                        <button
+                          className="btn ghost btn-sm"
+                          style={{ color: 'var(--danger, #ff4d4f)' }}
+                          onClick={() => handleDeleteStudent(s.id)}
+                          title={isKh ? 'លុប' : 'Delete'}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -573,6 +591,21 @@ export default function StudentRegistration({
           </table>
         </div>
       </div>
+
+      {editingStudent && (
+        <EditStudentModal
+          isOpen={Boolean(editingStudent)}
+          student={editingStudent}
+          onClose={() => setEditingStudent(null)}
+          onSuccess={() => {
+            setEditingStudent(null);
+            fetchRegisteredList();
+            if (onStudentAdded) onStudentAdded();
+          }}
+          language={language}
+          sessions={[]}
+        />
+      )}
     </div>
   );
 }
