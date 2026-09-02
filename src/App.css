@@ -1751,3 +1751,47 @@ tbody tr:hover {
   gap: 6px;
 }
 
+/* ==========================================================================
+   Edit Student Modal - Mobile & Laptop Responsive Enhancements
+   ========================================================================== */
+.edit-student-modal-container {
+  animation: modalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScaleUp {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .edit-student-modal-container {
+    max-height: 96vh !important;
+    width: 100% !important;
+    margin: 0 !important;
+    border-radius: 20px 20px 0 0 !important;
+  }
+
+  .edit-student-modal-container .modal-header {
+    padding: 14px 16px !important;
+  }
+
+  .edit-student-modal-container .modal-body {
+    padding: 14px 16px !important;
+  }
+
+  .edit-student-modal-container .modal-footer {
+    padding: 12px 16px !important;
+  }
+
+  .edit-student-modal-container .modal-footer button {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
